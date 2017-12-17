@@ -1,0 +1,18 @@
+users
+user_details(pgp,desc,)
+user_withdrawals(user_id,wallet_transacti)
+user_deposits(user_id,wallet_transaction_id)
+countries(name,symbol)
+// send, recieve, check_balance, list_transactions, view_transaction
+currencies(name,symbol)
+wallets(user_id, currency_id, public key, private key)
+wallet_transactions(wallet_id,transaction_hash,transaction_details,balance);
+vendors(user_id, title, desc, pgp)
+products(vendor_id,title,desc,cost)
+product_images(product_id,title,thumb_b64,image_b64)
+product_countries(product_id,country_id)
+orders(user_id,vendor_id,product_id,wallet_transaction_id)
+disputes
+reviews(order_id,comment)
+messages(user_id,vendor_id,title)
+message_messages(message_id,body)
