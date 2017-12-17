@@ -126,11 +126,22 @@ class Sidebar
 
             $menuTitle = $item;
             $menuPath = $items['path'];
-            $menuIcon = $items['icon'];
+            if(isset($items['icon'])) {
+
+                $menuIcon = $items['icon'];
+            }
+            else {
+
+                $menuIcon = '';
+            }
 
             $isActive = '';
 
             if ($currentPath == $items['path']) {
+
+                $isActive = 'active';
+            }
+            else if(isset($items['menu']) && Sidebar::isMenuActive($currentPath, $items['menu'])) {
 
                 $isActive = 'active';
             }
@@ -153,24 +164,39 @@ class Sidebar
 
     private static function buildSubMenus($currentPath, $menuItems)
     {
-        $isActive = '';
-
         $subMenu = '<ul class="treeview-menu">';
 
         foreach($menuItems['menu'] as $itemKey => $itemValue) {
 
+            $isActive = '';
+
             if($currentPath == $itemValue['path']) {
+
+                $isActive = 'active';
+            }
+            else if(isset($itemValue['menu']) && Sidebar::isMenuActive($currentPath, $itemValue['menu'])) {
 
                 $isActive = 'active';
             }
 
             $menuTitle = $itemKey;
             $menuPath = $itemValue['path'];
-            $menuIcon = $itemValue['icon'];
+            if(isset($itemValue['icon'])) {
+
+                $menuIcon = $itemValue['icon'];
+            }
+            else {
+
+                $menuIcon = '';
+            }
 
             $subMenu .= '<li class="' . $isActive . '"><a href="' . $menuPath . '"><i class="fa-left-icon fa ' . $menuIcon . '"></i><span>' . $menuTitle . '</span></a>';
 
             if(isset($itemValue['menu']) && $currentPath == $itemValue['path']) {
+
+                $subMenu .= Sidebar::buildSubMenus($currentPath, $itemValue);
+            }
+            else if(isset($itemValue['menu']) && Sidebar::isMenuActive($currentPath, $itemValue['menu'])) {
 
                 $subMenu .= Sidebar::buildSubMenus($currentPath, $itemValue);
             }
@@ -187,7 +213,7 @@ class Sidebar
     {
         foreach($menuItems as $menuTitle => $menuValues) {
 
-            if(isset($menuValues['menu'])) {
+            if(isset($menuValues['menu']) && count($menuValues['menu']) > 0) {
 
                 return true;
             }
@@ -203,7 +229,7 @@ class Sidebar
                 return true;
             }
 
-            if (isset($menuItem['menu'])) {
+            if (isset($menuItem['menu']) && count($menuItem['menu']) > 0) {
 
                 $isActive = self::isMenuActive($currentPath, $menuItem['menu']);
 

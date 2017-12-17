@@ -52,7 +52,7 @@
 $permissions = [
     [
         'role' => 'user',
-        'controller' => ['Dashboard'],
+        'controller' => ['Dashboard', 'Shop'],
         'action' => ['index'],
         'allowed' => true
     ],

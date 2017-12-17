@@ -66,30 +66,8 @@ $menus = [
     ],
     'user' => [
         [
-            'type'  => 'link',
-            'link'  => 'Upgrade to Vendor',
-            'icon'  => 'fa-rocket',
-            'path'  => '/profile'
-        ],
-        [
             'type'  => 'header',
             'header' => 'MAIN NAVIGATION'
-        ],
-        [
-            'type'  => 'link',
-            'link'  => 'Dashboard',
-            'icon'  => 'fa-dashboard',
-            'path'  => '/dashboard'
-        ],
-        [
-            'type'  => 'header',
-            'header' => 'USER NAVIGATION'
-        ],
-        [
-            'type'  => 'link',
-            'link'  => 'Logout',
-            'icon'  => 'fa-power-off',
-            'path'  => '/logout'
         ]
     ],
     'member' => [

@@ -63,6 +63,59 @@ class AppController extends Controller
 
     public function beforeRender(Event $event)
     {
+        $here = $this->request->getRequestTarget();
+
+        if(strpos($here, 'collapse=true') !== FALSE) {
+
+            $this->set('bodycollapse', 'sidebar-collapse');
+        }
+        else {
+            $this->set('bodycollapse', '');
+        }
+
+        if(strpos($here, 'collapse=true')) {
+            $collapse = 'collapse=true';
+        }
+        else
+        {
+            $collapse = 'collapse=false';
+        }
+
+        if(strpos($here, '?') > 0 && strpos($here, 'collapse=true') === FALSE) {
+            $this->set('navtoggle', str_replace('&collapse=true', '', str_replace('&collapse=false', '', $this->request->getRequestTarget())) . '&collapse=true');
+        }
+        else if(strpos($here, 'collapse=true') === FALSE) {
+            $this->set('navtoggle', str_replace('&collapse=true', '', str_replace('&collapse=false', '', $this->request->getRequestTarget())) . '?collapse=true');
+        }
+        else {
+            $this->set('navtoggle', str_replace('collapse=true', 'collapse=false', $here));
+        }
+
+        $this->set('menus', $this->buildMenus($collapse));
+
+        return parent::beforeRender($event);
+    }
+
+    private function getChildCategories($id, $collapse)
+    {
+        $productCategoriesTable = TableRegistry::get('product_categories');
+        $productCategoriesQuery = $productCategoriesTable->find('all')->where(['product_category_id' => $id]);
+        $productCategoriesResult = $productCategoriesQuery->all();
+
+        $product_categories = array();
+        foreach($productCategoriesResult as $productCategory) {
+            $product_categories[$productCategory->get('category_name')] = [
+                'path' => '/shop?product_category_id=' . $productCategory->get('id') . '&' . $collapse,
+                'menu' => $this->getChildCategories($productCategory->get('id'), $collapse),
+                'icon' => 'fa-plus-square'
+            ];
+        }
+
+        return $product_categories;
+    }
+
+    private function buildMenus($collapse)
+    {
         if(method_exists($this->Auth, 'user')) {
 
             if ($this->Auth->user('id')) {
@@ -71,22 +124,83 @@ class AppController extends Controller
 
                 $currentUser = TableRegistry::get(Configure::read('Users.table'))->get($this->Auth->user('id'));
 
-                $menus = Sidebar::buildMenu($this->request->here, $currentUser->role);
+                $productCategoriesTable = TableRegistry::get('product_categories');
+                $productCategoriesQuery = $productCategoriesTable->find('all')->where(['product_category_id' => 0]);
+                $productCategoriesResult = $productCategoriesQuery->all();
 
-                $this->set('menus', $menus);
+                $product_categories = array();
+                foreach($productCategoriesResult as $productCategory) {
+                    $product_categories[$productCategory->get('category_name')] = [
+                        'path' => '/shop?product_category_id=' . $productCategory->get('id') . '&' . $collapse,
+                        'menu' => $this->getChildCategories($productCategory->get('id'), $collapse),
+                        'icon' => 'fa-plus-square'
+                    ];
+                }
+
+                $productNavigation = array(
+                    'type'  => 'group',
+                    'group' => 'Browse by Category',
+                    'icon'  => 'fa-map-signs',
+                    'css'   => 'active non-active',
+                    'menu'  => $product_categories
+                );
+
+                $userNavigation = array(
+                    'type'  => 'group',
+                    'group' => 'User Menu',
+                    'icon'  => 'fa-user',
+                    'css'   => 'active non-active',
+                    'menu' => [
+                        'Dashboard' => [
+                            'path' => '/dashboard' . '?' . $collapse,
+                            'icon' => 'fa-dashboard'
+                        ],
+                        'Help Desk' => [
+                            'path' => '/support' . '?' . $collapse,
+                            'icon' => 'fa-question-circle'
+                        ],
+                        'Messages' => [
+                            'path' => '/messages' . '?' . $collapse,
+                            'icon' => 'fa-phone'
+                        ],
+                        'Wallet' => [
+                            'path' => '/wallet' . '?' . $collapse,
+                            'icon' => 'fa-money'
+                        ],
+                        'Disputes' => [
+                            'path' => '/disputes' . '?' . $collapse,
+                            'icon' => 'fa-exclamation'
+                        ],
+                        'Settings' => [
+                            'path' => '/settings' . '?' . $collapse,
+                            'icon' => 'fa-cogs'
+                        ],
+                        'Upgrade to Vendor' => [
+                            'path' => '/upgrade' . '?' . $collapse,
+                            'icon' => 'fa-rocket'
+                        ],
+                        'Logout' => [
+                            'path' => '/logout' . '?' . $collapse,
+                            'icon' => 'fa-power-off'
+                        ]
+                    ]
+                );
+
+                Sidebar::addMenuGroup($productNavigation, $currentUser->role);
+                Sidebar::addMenuGroup($userNavigation, $currentUser->role);
+
+                $menus = Sidebar::buildMenu($this->request->getRequestTarget(), $currentUser->role);
             }
             else {
 
-                $menus = Sidebar::buildMenu($this->request->here, 'visitor');
+                $menus = Sidebar::buildMenu($this->request->getRequestTarget(), 'visitor');
             }
         }
         else {
 
-            $menus = Sidebar::buildMenu($this->request->here, 'visitor');
+            $menus = Sidebar::buildMenu($this->request->getRequestTarget(), 'visitor');
         }
 
-        $this->set('menus', $menus);
-
-        return parent::beforeRender($event);
+        return $menus;
     }
 }

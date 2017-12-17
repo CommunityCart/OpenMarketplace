@@ -15,13 +15,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
     <!-- Theme style -->
     <?php echo $this->Html->css('AdminLTE.AdminLTE.min'); ?>
+    <?php echo $this->Html->css('adminlte_overrides.css'); ?>
 <!-- AdminLTE Skins. Choose a skin from the css/skins
     folder instead of downloading all of them to reduce the load. -->
     <?php echo $this->Html->css('AdminLTE.skins/skin-'. Configure::read('Theme.skin') .'.min'); ?>
 
     <?php echo $this->fetch('css'); ?>
 </head>
-<body class="hold-transition skin-<?php echo Configure::read('Theme.skin'); ?> sidebar-mini">
+<body class="hold-transition skin-<?php echo Configure::read('Theme.skin'); ?> sidebar-mini <?php echo $bodycollapse; ?>">
     <!-- Site wrapper -->
     <div class="wrapper">
         <header class="main-header">
