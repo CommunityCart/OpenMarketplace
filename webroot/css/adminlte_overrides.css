@@ -1,3 +1,7 @@
 .skin-blue .sidebar-menu>li.non-active>a {
     border-left-color: black !important;
 }
+
+.dropdown:hover .dropdown-menu {
+    display: block !important;
+}

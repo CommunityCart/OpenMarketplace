@@ -63,6 +63,15 @@ class AppController extends Controller
 
     public function beforeRender(Event $event)
     {
+        $collapse = $this->getCollapse();
+
+        $this->set('menus', $this->buildMenus($collapse));
+
+        return parent::beforeRender($event);
+    }
+
+    private function getCollapse()
+    {
         $here = $this->request->getRequestTarget();
 
         if(strpos($here, 'collapse=true') !== FALSE) {
@@ -73,7 +82,7 @@ class AppController extends Controller
             $this->set('bodycollapse', '');
         }
 
-        if(strpos($here, 'collapse=true')) {
+        if(strpos($here, 'collapse=true') !== FALSE) {
             $collapse = 'collapse=true';
         }
         else
@@ -81,19 +90,22 @@ class AppController extends Controller
             $collapse = 'collapse=false';
         }
 
-        if(strpos($here, '?') > 0 && strpos($here, 'collapse=true') === FALSE) {
-            $this->set('navtoggle', str_replace('&collapse=true', '', str_replace('&collapse=false', '', $this->request->getRequestTarget())) . '&collapse=true');
+        if(strpos($here, '?') > 0 && strpos($here, '=') > 0 && strpos($here, 'collapse=') === FALSE) {
+            $this->set('navtoggle', str_replace('collapse=true', '', str_replace('collapse=false', '',str_replace('&collapse=true', '', str_replace('&collapse=false', '', $this->request->getRequestTarget())))) . 'collapse=true');
         }
-        else if(strpos($here, 'collapse=true') === FALSE) {
-            $this->set('navtoggle', str_replace('&collapse=true', '', str_replace('&collapse=false', '', $this->request->getRequestTarget())) . '?collapse=true');
+        else if(strpos($here, 'collapse=') === FALSE) {
+            $this->set('navtoggle', str_replace('collapse=true', '', str_replace('collapse=false', '',str_replace('&collapse=true', '', str_replace('&collapse=false', '', $this->request->getRequestTarget())))) . '?collapse=true');
         }
         else {
-            $this->set('navtoggle', str_replace('collapse=true', 'collapse=false', $here));
+            if(strpos($here, 'true') > 0) {
+                $this->set('navtoggle', str_replace('collapse=true', 'collapse=false', $here));
+            }
+            else {
+                $this->set('navtoggle', str_replace('collapse=false', 'collapse=true', $here));
+            }
         }
 
-        $this->set('menus', $this->buildMenus($collapse));
-
-        return parent::beforeRender($event);
+        return $collapse;
     }
 
     private function getChildCategories($id, $collapse)
@@ -129,6 +141,12 @@ class AppController extends Controller
                 $productCategoriesResult = $productCategoriesQuery->all();
 
                 $product_categories = array();
+
+                $product_categories['Featured Products'] = [
+                    'path' => '/shop?' . $collapse,
+                    'icon' => 'fa-check-square-o'
+                ];
+
                 foreach($productCategoriesResult as $productCategory) {
                     $product_categories[$productCategory->get('category_name')] = [
                         'path' => '/shop?product_category_id=' . $productCategory->get('id') . '&' . $collapse,
@@ -155,17 +173,21 @@ class AppController extends Controller
                             'path' => '/dashboard' . '?' . $collapse,
                             'icon' => 'fa-dashboard'
                         ],
-                        'Help Desk' => [
-                            'path' => '/support' . '?' . $collapse,
-                            'icon' => 'fa-question-circle'
-                        ],
-                        'Messages' => [
-                            'path' => '/messages' . '?' . $collapse,
-                            'icon' => 'fa-phone'
-                        ],
                         'Wallet' => [
                             'path' => '/wallet' . '?' . $collapse,
                             'icon' => 'fa-money'
+                        ],
+                        'Messages' => [
+                            'path' => '/messages' . '?' . $collapse,
+                            'icon' => 'fa-envelope-o'
+                        ],
+                        'Notifications' => [
+                            'path' => '/notifications' . '?' . $collapse,
+                            'icon' => 'fa-bell-o'
+                        ],
+                        'Help Desk' => [
+                            'path' => '/support' . '?' . $collapse,
+                            'icon' => 'fa-question-circle'
                         ],
                         'Disputes' => [
                             'path' => '/disputes' . '?' . $collapse,
