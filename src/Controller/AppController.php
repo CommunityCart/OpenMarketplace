@@ -52,7 +52,7 @@ class AppController extends Controller
         $this->loadComponent('Security');
         $this->loadComponent('Csrf');
 
-        $this->Auth->configShallow('loginRedirect', '/dashboard');
+        $this->Auth->configShallow('loginRedirect', '/dashboard?collapse=false');
         $this->Auth->configShallow('logoutRedirect', '/login');
         $this->Auth->allow(['register', 'requestResetPassword', 'captcha']);
 
