@@ -16,38 +16,6 @@ $menus = [
         ],
         [
             'type'  => 'group',
-            'group' => 'Visitor Menu',
-            'icon'  => 'fa-map',
-            'css'   => 'active non-active',
-            'menu'  => [
-                'Home' => [
-                    'path' => '/',
-                    'icon' => 'fa-home',
-                ],
-                'Products' => [
-                    'path' => '/products',
-                    'icon' => 'fa-binoculars'
-                ],
-                'Pricing' => [
-                    'path' => '/pricing',
-                    'icon' => 'fa-money',
-                ],
-                'About' => [
-                    'path' => '/about',
-                    'icon' => 'fa-flag'
-                ],
-                'Company' => [
-                    'path' => '/company',
-                    'icon' => 'fa-cogs'
-                ],
-                'Investors' => [
-                    'path' => '/investors',
-                    'icon' => 'fa-line-chart'
-                ],
-            ]
-        ],
-        [
-            'type'  => 'group',
             'group' => 'User Menu',
             'icon'  => 'fa-user',
             'css'   => 'active non-active',
@@ -65,10 +33,7 @@ $menus = [
 
     ],
     'user' => [
-        [
-            'type'  => 'header',
-            'header' => 'MAIN NAVIGATION'
-        ]
+        
     ],
     'member' => [
         [

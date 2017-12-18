@@ -4,6 +4,7 @@
         <span class="sr-only">Toggle navigation</span>
     </a>
 
+    <?php if(isset($currentUser)) { ?>
     <div class="navbar-custom-menu">
         <ul class="nav navbar-nav">
             <!-- Messages: style can be found in dropdown.less-->
@@ -269,4 +270,5 @@
             </li>
         </ul>
     </div>
+    <?php } ?>
 </nav>

@@ -212,6 +212,8 @@ class AppController extends Controller
                 Sidebar::addMenuGroup($userNavigation, $currentUser->role);
 
                 $menus = Sidebar::buildMenu($this->request->getRequestTarget(), $currentUser->role);
+
+                $this->set('currentUser', $currentUser);
             }
             else {
 

@@ -3,7 +3,7 @@
 
     <!-- sidebar: style can be found in sidebar.less -->
     <section class="sidebar">
-
+        <?php if(isset($currentUser) && $currentUser->role == 'user') { ?>
         <form action="#" method="get" class="sidebar-form">
             <div class="input-group">
                 <input type="text" name="q" class="form-control" placeholder="Search...">
@@ -13,7 +13,7 @@
             </span>
             </div>
         </form>
-
+        <?php } ?>
         <!-- Sidebar Menu -->
         <div id="sidebar-links">
             <?php
