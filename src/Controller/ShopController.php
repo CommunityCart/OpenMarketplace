@@ -31,23 +31,67 @@ class ShopController extends AppController
     public function index()
     {
         $this->loadModel('Products');
+        $this->loadModel('ProductsFeatured');
 
-        $product_category_id = $this->request->getQuery('product_category_id');
+        $pcid = $this->request->getQuery('product_category_id');
 
-        $this->paginate = [
-            'contain' => ['Vendors', 'ProductCategories', 'Countries']
-        ];
+        if(isset($pcid)) {
 
-        if(isset($product_category_id)) {
+            $categories = $this->getCategoryIds($pcid);
+            $categories[] = $pcid;
+            
+            $productsQuery = $this->ProductsFeatured->find('all',
+                ['contain' =>
+                    ['Products', 'Products.ProductImages', 'Products.ProductCategories', 'Products.Countries', 'Products.Vendors', 'Products.Vendors.Users']
+                ]
+            );
 
-            $products = $this->paginate($this->Products->find('all')->where(['Products.product_category_id' => $product_category_id]));
+            foreach($categories as $category) {
+                $productsQuery->orWhere(['ProductCategories.id' => $category]);
+            }
+
+            $products = $this->paginate($productsQuery);
         }
         else {
-
-            $products = $this->paginate($this->Products->find('all'));
+            $products = $this->paginate($this->ProductsFeatured->find('all', ['contain' => ['Products', 'Products.ProductImages', 'Products.ProductCategories', 'Products.Countries', 'Products.Vendors', 'Products.Vendors.Users']]));
         }
 
         $this->set(compact('products'));
         $this->set('_serialize', ['products']);
+    }
+
+    public function favorites()
+    {
+        $this->loadModel('Products');
+        $this->loadModel('ProductsFavorite');
+
+        $products = $this->paginate($this->ProductsFavorite->find('all',
+            ['contain' =>
+                ['Products', 'Products.ProductImages', 'Products.ProductCategories', 'Products.Countries', 'Products.Vendors', 'Products.Vendors.Users']
+            ]
+        )->where(['ProductsFavorite.user_id' => $this->Auth->user('id')]));
+
+        $this->set(compact('products'));
+        $this->set('_serialize', ['products']);
+
+        $this -> render('index');
+    }
+
+    private function getCategoryIds($id)
+    {
+        $this->loadModel('ProductCategories');
+
+        $categories = $this->ProductCategories->find('all')->where(['product_category_id' => $id])->all();
+
+        $categoryArray = array();
+
+        foreach($categories as $category)
+        {
+            $categoryArray[] = $category->id;
+
+            $categoryArray = array_merge($categoryArray, $this->getCategoryIds($category->id));
+        }
+
+        return $categoryArray;
     }
 }

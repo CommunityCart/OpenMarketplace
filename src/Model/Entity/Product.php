@@ -9,7 +9,7 @@ use Cake\ORM\Entity;
  * @property int $id
  * @property int $vendor_id
  * @property string $title
- * @property string $desc
+ * @property string $body
  * @property float $cost
  * @property int $product_category_id
  * @property int $country_id

@@ -1,22 +1,22 @@
 <?php
 namespace App\Test\TestCase\Model\Table;
 
-use App\Model\Table\ProductsTable;
+use App\Model\Table\ProductsFavoriteTable;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
 
 /**
- * App\Model\Table\ProductsTable Test Case
+ * App\Model\Table\ProductsFavoriteTable Test Case
  */
-class ProductsTableTest extends TestCase
+class ProductsFavoriteTableTest extends TestCase
 {
 
     /**
      * Test subject
      *
-     * @var \App\Model\Table\ProductsTable
+     * @var \App\Model\Table\ProductsFavoriteTable
      */
-    public $Products;
+    public $ProductsFavorite;
 
     /**
      * Fixtures
@@ -24,6 +24,7 @@ class ProductsTableTest extends TestCase
      * @var array
      */
     public $fixtures = [
+        'app.products_favorite',
         'app.products',
         'app.vendors',
         'app.users',
@@ -35,7 +36,8 @@ class ProductsTableTest extends TestCase
         'app.countries',
         'app.orders',
         'app.product_countries',
-        'app.product_images'
+        'app.product_images',
+        'app.products_featured'
     ];
 
     /**
@@ -46,8 +48,8 @@ class ProductsTableTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $config = TableRegistry::exists('Products') ? [] : ['className' => ProductsTable::class];
-        $this->Products = TableRegistry::get('Products', $config);
+        $config = TableRegistry::exists('ProductsFavorite') ? [] : ['className' => ProductsFavoriteTable::class];
+        $this->ProductsFavorite = TableRegistry::get('ProductsFavorite', $config);
     }
 
     /**
@@ -57,7 +59,7 @@ class ProductsTableTest extends TestCase
      */
     public function tearDown()
     {
-        unset($this->Products);
+        unset($this->ProductsFavorite);
 
         parent::tearDown();
     }

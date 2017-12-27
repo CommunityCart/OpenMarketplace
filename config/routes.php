@@ -91,7 +91,7 @@ Router::connect('/captcha', ['controller' => 'Users', 'action' => 'captcha']);
 Router::connect('/messages', ['controller' => 'Messages', 'action' => 'index']);
 Router::connect('/categories', ['controller' => 'ProductCategories', 'action' => 'index']);
 Router::connect('/images/add/*', ['controller' => 'ProductImages', 'action' => 'add']);
-
+Router::connect('/favorites', ['controller' => 'Shop', 'action' => 'favorites']);
 
 
 Plugin::routes();

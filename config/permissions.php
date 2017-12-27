@@ -51,15 +51,9 @@
 
 $permissions = [
     [
-        'role' => 'user',
+        'role' => ['user', 'vendor'],
         'controller' => ['Dashboard', 'Shop'],
-        'action' => ['index'],
-        'allowed' => true
-    ],
-    [
-        'role' => 'vendor',
-        'controller' => ['Dashboard', 'Shop'],
-        'action' => ['index'],
+        'action' => ['index','favorites'],
         'allowed' => true
     ],
     [

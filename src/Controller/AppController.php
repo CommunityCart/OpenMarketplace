@@ -147,6 +147,11 @@ class AppController extends Controller
                     'icon' => 'fa-check-square-o'
                 ];
 
+                $product_categories['Favorited Products'] = [
+                    'path' => '/favorites?' . $collapse,
+                    'icon' => 'fa-check-square'
+                ];
+
                 foreach($productCategoriesResult as $productCategory) {
                     $product_categories[$productCategory->get('category_name')] = [
                         'path' => '/shop?product_category_id=' . $productCategory->get('id') . '&' . $collapse,

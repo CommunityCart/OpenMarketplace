@@ -15,6 +15,8 @@ use Cake\Validation\Validator;
  * @property \App\Model\Table\OrdersTable|\Cake\ORM\Association\HasMany $Orders
  * @property \App\Model\Table\ProductCountriesTable|\Cake\ORM\Association\HasMany $ProductCountries
  * @property \App\Model\Table\ProductImagesTable|\Cake\ORM\Association\HasMany $ProductImages
+ * @property |\Cake\ORM\Association\HasMany $ProductsFavorite
+ * @property |\Cake\ORM\Association\HasMany $ProductsFeatured
  *
  * @method \App\Model\Entity\Product get($primaryKey, $options = [])
  * @method \App\Model\Entity\Product newEntity($data = null, array $options = [])
@@ -64,6 +66,12 @@ class ProductsTable extends Table
             'foreignKey' => 'product_id'
         ]);
         $this->hasMany('ProductImages', [
+            'foreignKey' => 'product_id'
+        ]);
+        $this->hasMany('ProductsFavorite', [
+            'foreignKey' => 'product_id'
+        ]);
+        $this->hasMany('ProductsFeatured', [
             'foreignKey' => 'product_id'
         ]);
     }
