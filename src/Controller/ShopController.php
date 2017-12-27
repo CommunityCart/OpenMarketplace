@@ -39,7 +39,7 @@ class ShopController extends AppController
 
             $categories = $this->getCategoryIds($pcid);
             $categories[] = $pcid;
-            
+
             $productsQuery = $this->ProductsFeatured->find('all',
                 ['contain' =>
                     ['Products', 'Products.ProductImages', 'Products.ProductCategories', 'Products.Countries', 'Products.Vendors', 'Products.Vendors.Users']

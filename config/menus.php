@@ -59,7 +59,7 @@ $menus = [
             'css'   => 'active non-active',
             'menu' => [
                 'Dashboard' => [
-                    'path' => '/dashboard',
+                    'path' => '/dashboard?collapse=false',
                     'icon' => 'fa-dashboard',
                     /*
                     'menu' => [

@@ -37,7 +37,7 @@ class ProductsController extends AppController
         }
         else {
 
-            $this->redirect('/dashboard');
+            $this->redirect('/dashboard?collapse=false');
         }
 
         $this->set(compact('products'));
