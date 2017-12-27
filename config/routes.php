@@ -85,8 +85,13 @@ Router::connect('/profile', ['controller' => 'Users', 'action' => 'profile']);
 Router::connect('/login', ['controller' => 'Users', 'action' => 'login']);
 Router::connect('/logout', ['plugin' => 'CakeDC/Users', 'controller' => 'Users', 'action' => 'logout']);
 Router::connect('/register', ['controller' => 'Users', 'action' => 'register']);
+Router::connect('/upgrade', ['controller' => 'Users', 'action' => 'upgrade']);
 Router::connect('/reset', ['controller' => 'Users', 'action' => 'requestResetPassword']);
 Router::connect('/captcha', ['controller' => 'Users', 'action' => 'captcha']);
+Router::connect('/messages', ['controller' => 'Messages', 'action' => 'index']);
+Router::connect('/categories', ['controller' => 'ProductCategories', 'action' => 'index']);
+Router::connect('/images/add/*', ['controller' => 'ProductImages', 'action' => 'add']);
+
 
 
 Plugin::routes();

@@ -54,7 +54,7 @@ class AppController extends Controller
 
         $this->Auth->configShallow('loginRedirect', '/dashboard?collapse=false');
         $this->Auth->configShallow('logoutRedirect', '/login');
-        $this->Auth->allow(['register', 'requestResetPassword', 'captcha']);
+        $this->Auth->allow(['register', 'requestResetPassword', 'captcha', 'logout']);
 
         $this->viewBuilder()->setTheme('AdminLTE');
 
@@ -157,59 +157,29 @@ class AppController extends Controller
 
                 $productNavigation = array(
                     'type'  => 'group',
-                    'group' => 'Browse by Category',
+                    'group' => 'Shop by Category',
                     'icon'  => 'fa-map-signs',
                     'css'   => 'active non-active',
                     'menu'  => $product_categories
                 );
 
-                $userNavigation = array(
-                    'type'  => 'group',
-                    'group' => 'User Menu',
-                    'icon'  => 'fa-user',
-                    'css'   => 'active non-active',
-                    'menu' => [
-                        'Dashboard' => [
-                            'path' => '/dashboard' . '?' . $collapse,
-                            'icon' => 'fa-dashboard'
-                        ],
-                        'Wallet' => [
-                            'path' => '/wallet' . '?' . $collapse,
-                            'icon' => 'fa-money'
-                        ],
-                        'Messages' => [
-                            'path' => '/messages' . '?' . $collapse,
-                            'icon' => 'fa-envelope-o'
-                        ],
-                        'Notifications' => [
-                            'path' => '/notifications' . '?' . $collapse,
-                            'icon' => 'fa-bell-o'
-                        ],
-                        'Help Desk' => [
-                            'path' => '/support' . '?' . $collapse,
-                            'icon' => 'fa-question-circle'
-                        ],
-                        'Disputes' => [
-                            'path' => '/disputes' . '?' . $collapse,
-                            'icon' => 'fa-exclamation'
-                        ],
-                        'Settings' => [
-                            'path' => '/settings' . '?' . $collapse,
-                            'icon' => 'fa-cogs'
-                        ],
-                        'Upgrade to Vendor' => [
-                            'path' => '/upgrade' . '?' . $collapse,
-                            'icon' => 'fa-rocket'
-                        ],
-                        'Logout' => [
-                            'path' => '/logout' . '?' . $collapse,
-                            'icon' => 'fa-power-off'
-                        ]
-                    ]
-                );
-
                 Sidebar::addMenuGroup($productNavigation, $currentUser->role);
-                Sidebar::addMenuGroup($userNavigation, $currentUser->role);
+                $this->buildUserMenu($collapse, $currentUser->role);
+
+                switch($currentUser->get('role')) {
+                    case 'vendor':
+                        $this->buildVendorMenu($collapse, $currentUser->role);
+                        break;
+                    case 'admin':
+                        $this->buildVendorMenu($collapse, $currentUser->role);
+                        $this->buildAdminMenu($collapse, $currentUser->role);
+                        break;
+                    case 'superadmin':
+                        $this->buildVendorMenu($collapse, $currentUser->role);
+                        $this->buildAdminMenu($collapse, $currentUser->role);
+                        $this->buildSuperAdminMenu($collapse);
+                        break;
+                }
 
                 $menus = Sidebar::buildMenu($this->request->getRequestTarget(), $currentUser->role);
 
@@ -226,5 +196,112 @@ class AppController extends Controller
         }
 
         return $menus;
+    }
+
+    private function buildUserMenu($collapse, $role) {
+
+        $userNavigation = array(
+            'type'  => 'group',
+            'group' => 'User Menu',
+            'icon'  => 'fa-user',
+            'css'   => 'active non-active',
+            'menu' => [
+                'Dashboard' => [
+                    'path' => '/dashboard' . '?' . $collapse,
+                    'icon' => 'fa-dashboard'
+                ],
+                'Orders' => [
+                    'path' => '/orders' . '?' . $collapse,
+                    'icon' => 'fa-shopping-cart'
+                ],
+                'Wallet' => [
+                    'path' => '/wallet' . '?' . $collapse,
+                    'icon' => 'fa-money'
+                ],
+                'Messages' => [
+                    'path' => '/messages' . '?' . $collapse,
+                    'icon' => 'fa-envelope-o'
+                ],
+                'Notifications' => [
+                    'path' => '/notifications' . '?' . $collapse,
+                    'icon' => 'fa-bell-o'
+                ],
+                'Help Desk' => [
+                    'path' => '/support' . '?' . $collapse,
+                    'icon' => 'fa-question-circle'
+                ],
+                'Disputes' => [
+                    'path' => '/disputes' . '?' . $collapse,
+                    'icon' => 'fa-exclamation'
+                ],
+                'Settings' => [
+                    'path' => '/settings' . '?' . $collapse,
+                    'icon' => 'fa-cogs'
+                ],
+                'Logout' => [
+                    'path' => '/logout' . '?' . $collapse,
+                    'icon' => 'fa-power-off'
+                ]
+            ]
+        );
+
+        if($role == 'user') {
+            $userNavigation['menu']['Upgrade to Vendor'] = [
+                'path' => '/upgrade' . '?' . $collapse,
+                'icon' => 'fa-rocket'
+            ];
+        }
+
+        Sidebar::addMenuGroup($userNavigation, $role);
+    }
+
+    private function buildVendorMenu($collapse, $role) {
+        $userNavigation = array(
+            'type'  => 'group',
+            'group' => 'Vendor Menu',
+            'icon'  => 'fa-dollar',
+            'css'   => 'active non-active',
+            'menu' => [
+                'Products' => [
+                    'path' => '/products' . '?' . $collapse,
+                    'icon' => 'fa-empire'
+                ]
+            ]
+        );
+
+        Sidebar::addMenuGroup($userNavigation, $role);
+    }
+
+    private function buildAdminMenu($collapse, $role) {
+
+        $userNavigation = array(
+            'type'  => 'group',
+            'group' => 'Admin Menu',
+            'icon'  => 'fa-bullhorn',
+            'css'   => 'active non-active',
+            'menu' => [
+
+            ]
+        );
+
+        // Sidebar::addMenuGroup($userNavigation, $role);
+    }
+
+    private function buildSuperAdminMenu($collapse) {
+
+        $userNavigation = array(
+            'type'  => 'group',
+            'group' => 'SuperAdmin Menu',
+            'icon'  => 'fa-briefcase',
+            'css'   => 'active non-active',
+            'menu' => [
+                'Product Categories' => [
+                    'path' => '/categories' . '?' . $collapse,
+                    'icon' => 'fa-edit'
+                ]
+            ]
+        );
+
+        Sidebar::addMenuGroup($userNavigation, 'superadmin');
     }
 }

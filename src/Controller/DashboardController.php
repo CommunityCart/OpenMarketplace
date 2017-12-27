@@ -24,6 +24,41 @@ class DashboardController extends AppController
 
     public function index()
     {
+        $role = $this->Auth->user('role');
 
+        switch($role) {
+            case 'superadmin':
+                $this->superadmin();
+                break;
+            case 'admin':
+                $this->admin();
+                break;
+            case 'vendor':
+                $this->vendor();
+                break;
+            case 'user':
+                $this->user();
+                break;
+        }
+    }
+
+    private function superadmin()
+    {
+        $this->render('superadmin');
+    }
+
+    private function admin()
+    {
+        $this->render('admin');
+    }
+
+    private function vendor()
+    {
+        $this->render('vendor');
+    }
+
+    private function user()
+    {
+        $this->render('user');
     }
 }

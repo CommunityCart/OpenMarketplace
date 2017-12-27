@@ -57,6 +57,24 @@ $permissions = [
         'allowed' => true
     ],
     [
+        'role' => 'vendor',
+        'controller' => ['Dashboard', 'Shop'],
+        'action' => ['index'],
+        'allowed' => true
+    ],
+    [
+        'role' => 'vendor',
+        'controller' => ['Products', 'ProductImages'],
+        'action' => ['index', 'add', 'edit', 'delete'],
+        'allowed' => true
+    ],
+    [
+        'role' => 'user',
+        'controller' => ['Messages'],
+        'action' => ['index', 'add', 'view'],
+        'allowed' => true
+    ],
+    [
         'role' => '*',
         'controller' => ['Pages'],
         'action' => ['display', 'other', 'index'],

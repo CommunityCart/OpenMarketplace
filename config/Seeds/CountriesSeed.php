@@ -19,6 +19,9 @@ class CountriesSeed extends AbstractSeed
     public function run()
     {
         $data = [
+            ['name' => 'United States of America', 'symbol' => 'US'],
+            ['name' => 'United Kingdom', 'symbol' => 'GB'],
+            ['name' => 'World Wide', 'symbol' => 'WW'],
             ['name' => 'Afghanistan', 'symbol' => 'AF'],
             ['name' => 'Aland Islands', 'symbol' => 'AX'],
             ['name' => 'Albania', 'symbol' => 'AL'],
@@ -252,8 +255,6 @@ class CountriesSeed extends AbstractSeed
             ['name' => 'Uganda', 'symbol' => 'UG'],
             ['name' => 'Ukraine', 'symbol' => 'UA'],
             ['name' => 'United Arab Emirates', 'symbol' => 'AE'],
-            ['name' => 'United Kingdom', 'symbol' => 'GB'],
-            ['name' => 'United States of America', 'symbol' => 'US'],
             ['name' => 'US Minor Outlying Islands', 'symbol' => 'UM'],
             ['name' => 'Uruguay', 'symbol' => 'UY'],
             ['name' => 'Uzbekistan', 'symbol' => 'UZ'],

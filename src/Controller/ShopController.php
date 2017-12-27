@@ -30,6 +30,24 @@ class ShopController extends AppController
 {
     public function index()
     {
+        $this->loadModel('Products');
 
+        $product_category_id = $this->request->getQuery('product_category_id');
+
+        $this->paginate = [
+            'contain' => ['Vendors', 'ProductCategories', 'Countries']
+        ];
+
+        if(isset($product_category_id)) {
+
+            $products = $this->paginate($this->Products->find('all')->where(['Products.product_category_id' => $product_category_id]));
+        }
+        else {
+
+            $products = $this->paginate($this->Products->find('all'));
+        }
+
+        $this->set(compact('products'));
+        $this->set('_serialize', ['products']);
     }
 }

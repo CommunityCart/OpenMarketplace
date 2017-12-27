@@ -6,7 +6,7 @@ $menus = [
     'visitor' => [
         [
             'type'  => 'header',
-            'header' => 'Welcome to CakeAdminLTE'
+            'header' => 'Welcome to Open Marketplace'
         ],
         [
             'type'  => 'link',
