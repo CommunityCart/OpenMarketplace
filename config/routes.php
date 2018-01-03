@@ -92,6 +92,14 @@ Router::connect('/messages', ['controller' => 'Messages', 'action' => 'index']);
 Router::connect('/categories', ['controller' => 'ProductCategories', 'action' => 'index']);
 Router::connect('/images/add/*', ['controller' => 'ProductImages', 'action' => 'add']);
 Router::connect('/favorites', ['controller' => 'Shop', 'action' => 'favorites']);
-
+Router::connect('/settings/shipping', ['controller' => 'ShippingOptions', 'action' => 'index']);
+Router::connect('/settings/shipping/create', ['controller' => 'ShippingOptions', 'action' => 'add']);
+Router::connect('/settings/shipping/*', ['controller' => 'ShippingOptions', 'action' => 'edit']);
+Router::connect('/products/flag/*', ['controller' => 'Products', 'action' => 'flag']);
+Router::connect('/products/favorite/*', ['controller' => 'Products', 'action' => 'favorite']);
+Router::connect('/order/*', ['controller' => 'Orders', 'action' => 'order_review']);
+Router::connect('/order/order-review2/*', ['controller' => 'Orders', 'action' => 'order_review2']);
+Router::connect('/wallet', ['controller' => 'Wallets', 'action' => 'index']);
+Router::connect('/wallet/deposit', ['controller' => 'Wallets', 'action' => 'deposit']);
 
 Plugin::routes();

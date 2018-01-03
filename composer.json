@@ -16,7 +16,8 @@
         "josegonzalez/dotenv": "2.*",
         "maiconpinto/cakephp-adminlte-theme": "^1.0",
         "mobiledetect/mobiledetectlib": "2.*",
-        "muffin/slug": "^1.2"
+        "muffin/slug": "^1.2",
+        "communitycart/bitcoin-wallet-api" : "dev-master"
     },
     "require-dev": {
         "cakephp/bake": "^1.1",
@@ -53,6 +54,7 @@
         "cs-fix": "phpcbf --colors --standard=vendor/cakephp/cakephp-codesniffer/CakePHP ./src ./tests",
         "test": "phpunit --colors=always"
     },
+    "minimum-stability": "dev",
     "prefer-stable": true,
     "config": {
         "sort-packages": true

@@ -22,6 +22,7 @@ class CurrenciesSeed extends AbstractSeed
             ['name' => 'US Dollar', 'symbol' => 'USD'],
             ['name' => 'Euro', 'symbol' => 'EUR'],
             ['name' => 'Canadian Dollar', 'symbol' => 'CAD'],
+            ['name' => 'Cash Money Coin', 'symbol' => 'CMC'],
         ];
 
         $table = $this->table('currencies');

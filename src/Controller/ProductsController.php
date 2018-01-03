@@ -14,6 +14,34 @@ use Cake\ORM\TableRegistry;
 class ProductsController extends AppController
 {
 
+    public function favorite($id = null)
+    {
+        $this->loadModel('ProductsFavorite');
+        $favorite = $this->ProductsFavorite->newEntity([
+            'product_id' => $id,
+            'user_id' => $this->Auth->user('id')
+        ]);
+        $this->ProductsFavorite->save($favorite);
+
+        $this->Flash->success('Product Added Successfully');
+
+        $this->redirect($this->referer());
+    }
+
+    public function flag($id = null)
+    {
+        $this->loadModel('ProductsFlagged');
+        $favorite = $this->ProductsFlagged->newEntity([
+            'product_id' => $id,
+            'user_id' => $this->Auth->user('id')
+        ]);
+        $this->ProductsFlagged->save($favorite);
+
+        $this->Flash->success('Product Flagged Successfully');
+
+        $this->redirect($this->referer());
+    }
+
     /**
      * Index method
      *
@@ -53,14 +81,18 @@ class ProductsController extends AppController
      */
     public function view($id = null)
     {
-        $vendorTable = TableRegistry::get('vendors');
-        $vendorsQuery = $vendorTable->find('all')->where(['user_id' => $this->Auth->user('id')]);
-        $vendorResult = $vendorsQuery->first();
+        $image_index = $this->request->getQuery('image_index');
+
+        if(!isset($image_index)) {
+            $image_index = 0;
+        }
 
         $product = $this->Products->get($id, [
-            'contain' => ['Vendors', 'ProductCategories', 'Countries', 'Orders', 'ProductCountries', 'ProductImages']
+            'contain' => ['Vendors', 'Vendors.Users', 'ProductCategories', 'Countries', 'Orders', 'ProductCountries', 'ProductImages', 'Vendors.ShippingOptions']
         ]);
 
+        $this->set('id', $id);
+        $this->set('image_index', $image_index);
         $this->set('product', $product);
         $this->set('_serialize', ['product']);
     }

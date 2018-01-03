@@ -20,6 +20,15 @@ class Users
         return $usersTable;
     }
 
+    public static function getVendorID($user_id)
+    {
+        $vendorTable = TableRegistry::get('vendors');
+        $vendorsQuery = $vendorTable->find('all')->where(['user_id' => $user_id]);
+        $vendorResult = $vendorsQuery->first();
+
+        return $vendorResult->get('id');
+    }
+
     public function update($user, $column, $value)
     {
         $usersTable = $this->getUserTable();

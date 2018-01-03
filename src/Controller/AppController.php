@@ -21,6 +21,7 @@ use Cake\Core\Configure;
 use Cake\ORM\TableRegistry;
 use Cake\Controller\Component\AuthComponent;
 use Cake\ORM\Table;
+use App\Utility\Litecoin;
 
 /**
  * Application Controller
@@ -63,11 +64,27 @@ class AppController extends Controller
 
     public function beforeRender(Event $event)
     {
+        $this->doWallet();
+
         $collapse = $this->getCollapse();
 
         $this->set('menus', $this->buildMenus($collapse));
 
         return parent::beforeRender($event);
+    }
+
+    private function doWallet()
+    {
+        $this->loadModel('Wallets');
+
+        $wallets = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')])->last();
+
+        $litecoin = new Litecoin();
+
+        if(!isset($wallets) || count($wallets) == 0) {
+
+            print_r($litecoin->generateNewDepositAddress($this->Auth->user('id'))); die();
+        }
     }
 
     private function getCollapse()
@@ -239,6 +256,10 @@ class AppController extends Controller
                     'path' => '/disputes' . '?' . $collapse,
                     'icon' => 'fa-exclamation'
                 ],
+                'Invites' => [
+                    'path' => '/invites' . '?' . $collapse,
+                    'icon' => 'fa-bullhorn'
+                ],
                 'Settings' => [
                     'path' => '/settings' . '?' . $collapse,
                     'icon' => 'fa-cogs'
@@ -270,6 +291,10 @@ class AppController extends Controller
                 'Products' => [
                     'path' => '/products' . '?' . $collapse,
                     'icon' => 'fa-empire'
+                ],
+                'Shipping Options' => [
+                    'path' => '/settings/shipping' . '?' . $collapse,
+                    'icon' => 'fa-cart-plus'
                 ]
             ]
         );

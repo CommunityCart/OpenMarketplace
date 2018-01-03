@@ -1,22 +1,22 @@
 <?php
 namespace App\Test\TestCase\Model\Table;
 
-use App\Model\Table\VendorsTable;
+use App\Model\Table\WalletsTable;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
 
 /**
- * App\Model\Table\VendorsTable Test Case
+ * App\Model\Table\WalletsTable Test Case
  */
-class VendorsTableTest extends TestCase
+class WalletsTableTest extends TestCase
 {
 
     /**
      * Test subject
      *
-     * @var \App\Model\Table\VendorsTable
+     * @var \App\Model\Table\WalletsTable
      */
-    public $Vendors;
+    public $Wallets;
 
     /**
      * Fixtures
@@ -24,20 +24,12 @@ class VendorsTableTest extends TestCase
      * @var array
      */
     public $fixtures = [
-        'app.vendors',
+        'app.wallets',
         'app.users',
         'app.social_accounts',
         'app.users_subscriptions',
-        'app.messages',
-        'app.message_messages',
-        'app.products',
-        'app.product_categories',
-        'app.countries',
-        'app.orders',
-        'app.product_countries',
-        'app.product_images',
-        'app.products_favorite',
-        'app.products_featured'
+        'app.currencies',
+        'app.wallet_transactions'
     ];
 
     /**
@@ -48,8 +40,8 @@ class VendorsTableTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $config = TableRegistry::exists('Vendors') ? [] : ['className' => VendorsTable::class];
-        $this->Vendors = TableRegistry::get('Vendors', $config);
+        $config = TableRegistry::exists('Wallets') ? [] : ['className' => WalletsTable::class];
+        $this->Wallets = TableRegistry::get('Wallets', $config);
     }
 
     /**
@@ -59,7 +51,7 @@ class VendorsTableTest extends TestCase
      */
     public function tearDown()
     {
-        unset($this->Vendors);
+        unset($this->Wallets);
 
         parent::tearDown();
     }

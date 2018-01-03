@@ -1,4 +1,15 @@
-<!-- Main content -->
+<section class="content-header">
+    <h1>
+        <?= h($title) ?>
+    </h1>
+    <ol class="breadcrumb">
+        <li>
+            <?= $this->Html->link('<i class="fa fa-dashboard"></i> ' . __('Back'), ['action' => 'index'], ['escape' =>
+            false])?>
+        </li>
+    </ol>
+</section>
+
 <section class="content">
     <div class="container-fluid">
 
@@ -10,14 +21,14 @@
         <div class="row">
     <?php } ?>
 
-        <div class="col-xs-3" style="display:inline-block">
+        <div class="col-md-3" style="display:inline-block">
             <div class="box">
                 <div class="box-header">
                     <center><h3 class="box-title"><a href="/products/view/<?php echo $product->product->id; ?>"><?= h($product->product->title) ?></a></h3></center>
                 </div>
                 <!-- /.box-header -->
                 <div class="box-body table-responsive no-padding">
-                    <div class="col-xs-12">
+                    <div class="col-md-12">
                     <center><a href="/products/view/<?php echo $product->product->id; ?>"><?= $this->Html->image(str_replace(WWW_ROOT, '/', $product->product->product_images[0]->image_thumbnail)); ?></a></center>
                     </div>
                 </div>
@@ -41,5 +52,6 @@
     <?php } ?>
     <?php endforeach; ?>
         </div>
+
 </section>
 <!-- /.content -->

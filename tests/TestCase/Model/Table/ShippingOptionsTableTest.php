@@ -1,22 +1,22 @@
 <?php
 namespace App\Test\TestCase\Model\Table;
 
-use App\Model\Table\VendorsTable;
+use App\Model\Table\ShippingOptionsTable;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
 
 /**
- * App\Model\Table\VendorsTable Test Case
+ * App\Model\Table\ShippingOptionsTable Test Case
  */
-class VendorsTableTest extends TestCase
+class ShippingOptionsTableTest extends TestCase
 {
 
     /**
      * Test subject
      *
-     * @var \App\Model\Table\VendorsTable
+     * @var \App\Model\Table\ShippingOptionsTable
      */
-    public $Vendors;
+    public $ShippingOptions;
 
     /**
      * Fixtures
@@ -24,6 +24,7 @@ class VendorsTableTest extends TestCase
      * @var array
      */
     public $fixtures = [
+        'app.shipping_options',
         'app.vendors',
         'app.users',
         'app.social_accounts',
@@ -48,8 +49,8 @@ class VendorsTableTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $config = TableRegistry::exists('Vendors') ? [] : ['className' => VendorsTable::class];
-        $this->Vendors = TableRegistry::get('Vendors', $config);
+        $config = TableRegistry::exists('ShippingOptions') ? [] : ['className' => ShippingOptionsTable::class];
+        $this->ShippingOptions = TableRegistry::get('ShippingOptions', $config);
     }
 
     /**
@@ -59,7 +60,7 @@ class VendorsTableTest extends TestCase
      */
     public function tearDown()
     {
-        unset($this->Vendors);
+        unset($this->ShippingOptions);
 
         parent::tearDown();
     }

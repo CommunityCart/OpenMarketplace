@@ -32,6 +32,7 @@ class ProductsFavoriteTableTest extends TestCase
         'app.users_subscriptions',
         'app.messages',
         'app.message_messages',
+        'app.shipping_options',
         'app.product_categories',
         'app.countries',
         'app.orders',

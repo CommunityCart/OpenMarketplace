@@ -40,6 +40,8 @@ class ShopController extends AppController
             $categories = $this->getCategoryIds($pcid);
             $categories[] = $pcid;
 
+            $title = $this->getCategoryTitle($pcid);
+
             $productsQuery = $this->ProductsFeatured->find('all',
                 ['contain' =>
                     ['Products', 'Products.ProductImages', 'Products.ProductCategories', 'Products.Countries', 'Products.Vendors', 'Products.Vendors.Users']
@@ -50,11 +52,21 @@ class ShopController extends AppController
                 $productsQuery->orWhere(['ProductCategories.id' => $category]);
             }
 
+            if($title == 'Product Categories') {
+
+                $title = 'All Products';
+            }
+
+            $this->set('title', $title);
+
             $products = $this->paginate($productsQuery);
         }
         else {
             $products = $this->paginate($this->ProductsFeatured->find('all', ['contain' => ['Products', 'Products.ProductImages', 'Products.ProductCategories', 'Products.Countries', 'Products.Vendors', 'Products.Vendors.Users']]));
+
+            $this->set('title', 'Featured Products');
         }
+
 
         $this->set(compact('products'));
         $this->set('_serialize', ['products']);
@@ -71,10 +83,20 @@ class ShopController extends AppController
             ]
         )->where(['ProductsFavorite.user_id' => $this->Auth->user('id')]));
 
+        $this->set('title', 'Favorite Products');
         $this->set(compact('products'));
         $this->set('_serialize', ['products']);
 
         $this -> render('index');
+    }
+
+    private function getCategoryTitle($id)
+    {
+        $this->loadModel('ProductCategories');
+
+        $categories = $this->ProductCategories->find('all')->where(['id' => $id])->first();
+
+        return $categories->category_name;
     }
 
     private function getCategoryIds($id)

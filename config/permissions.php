@@ -57,9 +57,27 @@ $permissions = [
         'allowed' => true
     ],
     [
+        'role' => ['user', 'vendor'],
+        'controller' => ['Orders'],
+        'action' => ['orderReview', 'index', 'orderReview2', 'delete'],
+        'allowed' => true
+    ],
+    [
+        'role' => ['user', 'vendor', 'admin', 'superadmin'],
+        'controller' => ['Wallets'],
+        'action' => ['index'],
+        'allowed' => true
+    ],
+    [
+        'role' => ['user', 'vendor', 'admin', 'superadmin'],
+        'controller' => ['Products'],
+        'action' => ['favorite', 'flag'],
+        'allowed' => true
+    ],
+    [
         'role' => 'vendor',
-        'controller' => ['Products', 'ProductImages'],
-        'action' => ['index', 'add', 'edit', 'delete'],
+        'controller' => ['Products', 'ProductImages', 'ShippingOptions'],
+        'action' => ['index', 'add', 'edit', 'delete', 'view'],
         'allowed' => true
     ],
     [

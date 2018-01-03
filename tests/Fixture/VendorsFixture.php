@@ -45,9 +45,9 @@ class VendorsFixture extends TestFixture
             'user_id' => 'Lorem ipsum dolor sit amet',
             'title' => 'Lorem ipsum dolor sit amet',
             'tos' => 'Lorem ipsum dolor sit amet, aliquet feugiat. Convallis morbi fringilla gravida, phasellus feugiat dapibus velit nunc, pulvinar eget sollicitudin venenatis cum nullam, vivamus ut a sed, mollitia lectus. Nulla vestibulum massa neque ut et, id hendrerit sit, feugiat in taciti enim proin nibh, tempor dignissim, rhoncus duis vestibulum nunc mattis convallis.',
-            'created' => '2017-12-20 00:52:49',
-            'modified' => '2017-12-20 00:52:49',
-            'last_active' => '2017-12-20 00:52:49'
+            'created' => '2017-12-30 17:42:46',
+            'modified' => '2017-12-30 17:42:46',
+            'last_active' => '2017-12-30 17:42:46'
         ],
     ];
 }

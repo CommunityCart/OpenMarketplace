@@ -12,6 +12,7 @@ use Cake\Validation\Validator;
  * @property \App\Model\Table\UsersTable|\Cake\ORM\Association\BelongsTo $Users
  * @property \App\Model\Table\MessagesTable|\Cake\ORM\Association\HasMany $Messages
  * @property \App\Model\Table\ProductsTable|\Cake\ORM\Association\HasMany $Products
+ * @property |\Cake\ORM\Association\HasMany $ShippingOptions
  *
  * @method \App\Model\Entity\Vendor get($primaryKey, $options = [])
  * @method \App\Model\Entity\Vendor newEntity($data = null, array $options = [])
@@ -50,6 +51,9 @@ class VendorsTable extends Table
             'foreignKey' => 'vendor_id'
         ]);
         $this->hasMany('Products', [
+            'foreignKey' => 'vendor_id'
+        ]);
+        $this->hasMany('ShippingOptions', [
             'foreignKey' => 'vendor_id'
         ]);
     }
