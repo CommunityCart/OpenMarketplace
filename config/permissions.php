@@ -70,6 +70,12 @@ $permissions = [
     ],
     [
         'role' => ['user', 'vendor', 'admin', 'superadmin'],
+        'controller' => ['Vendors'],
+        'action' => ['view'],
+        'allowed' => true
+    ],
+    [
+        'role' => ['user', 'vendor', 'admin', 'superadmin'],
         'controller' => ['Products'],
         'action' => ['favorite', 'flag'],
         'allowed' => true

@@ -21,7 +21,7 @@ class Litecoin
         ];
 
         try {
-            $this->wallet = new Wallet(new JsonRPC($conf));
+            $this->wallet = new Wallet(new JsonRPC($conf), 2);
 
         } catch (RPCException $e) {
 
@@ -49,13 +49,26 @@ class Litecoin
     {
         try {
 
-        $asdgf = $this->wallet->getNewAddress('hello');
+        return $this->wallet->getNewAddress('hello');
 
-        return $asdgf;
-        
         } catch (RPCException $e) {
             echo $e->getTraceAsString();
             die();
         }
+    }
+
+    public function getPrivateKeyByAddress($address)
+    {
+        return $this->wallet->getPrivateKeyByAddress($address);
+    }
+
+    public function getTransactionsByAccount($account)
+    {
+        return $this->wallet->getTransactions($account);
+    }
+
+    public function getAllBalances($inlcude_empty)
+    {
+        return $this->wallet->getBalances($inlcude_empty);
     }
 }

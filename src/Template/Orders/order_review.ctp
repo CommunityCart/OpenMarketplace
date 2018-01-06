@@ -5,7 +5,7 @@
             <div class="col-md-12">
                 <div class="box">
                     <div class="box-header">
-                        <h4>Your account balance is to low to make this purchase, You are missing <?= $this->Number->currency($missingBalance) ?></h4>
+                        <h4 style="display:inline-block;"><b>Insufficient Funds: </b>Your account balance is to low to make this purchase, You are missing <?= $this->Number->currency($missingBalance) ?> USD</h4>&nbsp;<a href="/wallet" class="btn btn-success" style="float:right;">Click Here to Deposit <?= $this->Number->currency($missingBalance) ?></a>
                     </div>
                 </div>
             </div>
@@ -61,7 +61,7 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <span><a href="/vendor/<?= $product->vendor->id ?>"><?= $product->vendor->user->username ?></a>&nbsp;&nbsp;(11,500 / 4.94)</span>
+                                            <span><a href="/vendor/<?= $product->vendor->id ?>"><?= $product->vendor->user->username ?></a>&nbsp;&nbsp;(<?= $vendorOrderCount ?> / <?= $vendorRating ?>)</span>
                                         </div>
                                     </div>
                                     <hr/>
@@ -74,12 +74,15 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12">
+                                            <?php $x = 0; ?>
+                                            <?php for($i = 0; $i < $product->rating; $i++) { ?>
                                             <span class="fa fa-star checked"></span>
-                                            <span class="fa fa-star checked"></span>
-                                            <span class="fa fa-star checked"></span>
+                                            <?php $x = $x + 1; ?>
+                                            <?php } ?>
+                                            <?php for($y = $x; $y < 5; $y++) { ?>
                                             <span class="fa fa-star"></span>
-                                            <span class="fa fa-star"></span>
-                                            &nbsp;&nbsp;(1,500)
+                                            <?php } ?>
+                                            &nbsp;&nbsp;(<?= $productOrderCount ?>)
                                         </div>
                                     </div>
                                     <hr/>
@@ -94,18 +97,18 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6">
-                                            USPS - First Class
+                                           <?= $shipping_options->shipping_carrier . ' - ' . $shipping_options->shipping_name ?>
                                         </div>
                                         <div class="col-md-6 pull-right">
-                                            $15.00
+                                            <?= $shipping_options->shipping_cost ?>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6">
-                                           1 x $4000.25
+                                           <?= 'Quantity of ' . $order->quantity ?> x <?= $product->cost ?>
                                         </div>
                                         <div class="col-md-6 pull-right">
-                                            $4000.25
+                                            <?= $order->quantity * $product->cost ?>
                                         </div>
                                     </div>
                                     <hr/>
@@ -114,7 +117,7 @@
                                             Total
                                         </div>
                                         <div class="col-md-6 pull-right">
-                                            <span>$4015.25</span>
+                                            <span><?= $this->Number->currency(($order->quantity * $product->cost) + $shipping_options->shipping_cost) ?></span>
                                         </div>
                                     </div>
                                     <hr/>
@@ -123,15 +126,16 @@
                                             Available Balance
                                         </div>
                                         <div class="col-md-6 pull-right">
-                                            <span>$15.25</span>
+                                            <span><?= $this->Number->currency($totalBalance, 'USD', ['precision' => 3]) ?></span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <hr/>
+                            <?php if($balance == 'low') { ?>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <a href="/wallet/deposit" class="btn btn-success btn-block">Click Here to Deposit $4000</a>
+                                    <a href="/wallet" class="btn btn-success btn-block">Click Here to Deposit <?= $this->Number->currency($missingBalance) ?></a>
                                 </div>
                             </div>
                             <br/>
@@ -140,6 +144,13 @@
                                     <span>Use Orders link on the left to get back to this page</span>
                                 </div>
                             </div>
+                            <?php } else { ?>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <a href="/wallet" class="btn btn-success btn-block">Click Here Submit Order</a>
+                                </div>
+                            </div>
+                            <?php } ?>
                         </div>
                     </div>
                     <!-- /.box-header -->

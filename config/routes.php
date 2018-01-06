@@ -101,5 +101,7 @@ Router::connect('/order/*', ['controller' => 'Orders', 'action' => 'order_review
 Router::connect('/order/order-review2/*', ['controller' => 'Orders', 'action' => 'order_review2']);
 Router::connect('/wallet', ['controller' => 'Wallets', 'action' => 'index']);
 Router::connect('/wallet/deposit', ['controller' => 'Wallets', 'action' => 'deposit']);
+Router::connect('/vendor/*', ['controller' => 'Vendors', 'action' => 'view']);
+
 
 Plugin::routes();

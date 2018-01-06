@@ -12,96 +12,106 @@ use App\Controller\AppController;
  */
 class OrdersController extends AppController
 {
-    public function orderReview($id = null)
+    public function orderReviewer($id = null, $idIsProduct = false)
     {
-        $data = $this->request->getData();
-
         $this->loadModel('Products');
         $this->loadModel('Wallets');
         $this->loadModel('ShippingOptions');
+        $this->loadModel('Vendors');
 
-        $wallets = $this->Wallets->find('all', ['contain' => ['Users', 'Currencies']])->where(['Wallets.user_id' => $this->Auth->user('id'), 'Wallets.currency_id' => '4'])->all();
+        $order = $this->Orders->find('all')->where(['id' => $id, 'user_id' => $this->Auth->user('id')])->first();
 
-        $totalBalance = 0;
-
-        foreach($wallets as $wallet)
+        if($idIsProduct == true)
         {
-            $totalBalance = $totalBalance + $wallet->wallet_balance;
+            $data = $this->request->getData();
+        }
+        else {
+
+            $data = $order;
         }
 
-        $productsResult = $this->Products->find('all', ['contain' => ['Vendors', 'Vendors.Users', 'ProductCategories', 'Countries', 'Orders', 'ProductCountries', 'ProductImages', 'Vendors.ShippingOptions']])->where(['Products.id' => $id])->first();
+        $totalBalance = \App\Utility\Wallet::getWalletBalance($this->Auth->user('id'));
 
-        $shippingOptions = $this->ShippingOptions->find('all')->where(['id' => $data['shipping_options']])->first();
+        if($idIsProduct == true) {
 
-        if($totalBalance > ($productsResult->cost * $data['quantity'])) {
+            $product_id = $id;
+        }
+        else {
+
+            $product_id = $data->product_id;
+        }
+
+        $productsResult = $this->Products->find('all', ['contain' => ['Vendors', 'Vendors.Users', 'ProductCategories', 'Countries', 'Orders', 'ProductCountries', 'ProductImages', 'Vendors.ShippingOptions']])->where(['Products.id' => $product_id])->first();
+
+        // TODO: Performance, Add Count Columns To Tables instead of counting everytime.
+        $vendorOrderCount = $this->Orders->find('all', ['contain' => ['Products']])->where(['Products.vendor_id' => $productsResult->vendor->id, 'Orders.status >' => 1])->count();
+        $productOrderCount = $this->Orders->find('all')->where(['product_id' => $productsResult->id, 'Orders.status >' => 1])->count();
+
+        $vendorRating = $this->Vendors->find('all')->where(['id' => $productsResult->vendor->id])->first();
+
+        if($idIsProduct == true)
+        {
+            $quantity = $data['quantity'];
+            $shipping_options = $data['shipping_options'];
+        }
+        else {
+
+            $quantity = $data->quantity;
+            $shipping_options = $data->shipping_option_id;
+        }
+
+        $shippingOptions = $this->ShippingOptions->find('all')->where(['id' => $shipping_options])->first();
+
+        if($totalBalance > (($productsResult->cost * $quantity) + $shippingOptions->get('shipping_cost'))) {
 
             $this->set('balance', 'high');
 
             $missingBalance = 0;
+            $status = 1;
         }
         else {
-            $missingBalance = ($productsResult->cost * $data['quantity']) - $totalBalance;
+            $missingBalance = (($productsResult->cost * $quantity) + $shippingOptions->get('shipping_cost')) - $totalBalance;
+
+            $status = 0;
 
             $this->set('balance', 'low');
             $this->set('missingBalance', $missingBalance);
         }
 
-        $order = $this->Orders->newEntity([
-            'user_id' => $this->Auth->user('id'),
-            'product_id' => $id,
-            'wallet_transaction_id' => -1,
-            'status' => 0,
-            'quantity' => $data['quantity'],
-            'shipping_option_id' => $data['shipping_options'],
-            'created' => new \DateTime('now')
-        ]);
+        if($idIsProduct == true)
+        {
+            $order = $this->Orders->newEntity([
+                'user_id' => $this->Auth->user('id'),
+                'product_id' => $id,
+                'wallet_transaction_id' => -1,
+                'status' => $status,
+                'quantity' => $data['quantity'],
+                'shipping_option_id' => $data['shipping_options'],
+                'created' => new \DateTime('now')
+            ]);
 
-        $this->Orders->save($order);
+            $this->Orders->save($order);
+        }
 
+        $this->set('totalBalance', $totalBalance);
+        $this->set('order', $order);
+        $this->set('vendorRating', $vendorRating->get('rating'));
+        $this->set('vendorOrderCount', $vendorOrderCount);
+        $this->set('productOrderCount', $productOrderCount);
         $this->set('shipping_options', $shippingOptions);
         $this->set('image_index', '0');
         $this->set('id', $id);
         $this->set('product', $productsResult);
     }
 
+    public function orderReview($id = null)
+    {
+        $this->orderReviewer($id, true);
+    }
+
     public function orderReview2($id = null)
     {
-        $data = $this->Orders->find('all')->where(['id' => $id, 'user_id' => $this->Auth->user('id')])->first();
-
-        $this->loadModel('Products');
-        $this->loadModel('Wallets');
-        $this->loadModel('ShippingOptions');
-
-        $wallets = $this->Wallets->find('all', ['contain' => ['Users', 'Currencies']])->where(['Wallets.user_id' => $this->Auth->user('id'), 'Wallets.currency_id' => '4'])->all();
-
-        $totalBalance = 0;
-
-        foreach($wallets as $wallet)
-        {
-            $totalBalance = $totalBalance + $wallet->wallet_balance;
-        }
-
-        $productsResult = $this->Products->find('all', ['contain' => ['Vendors', 'Vendors.Users', 'ProductCategories', 'Countries', 'Orders', 'ProductCountries', 'ProductImages', 'Vendors.ShippingOptions']])->where(['Products.id' => $data->product_id])->first();
-
-        $shippingOptions = $this->ShippingOptions->find('all')->where(['id' => $data->shipping_option_id])->first();
-
-        if($totalBalance > ($productsResult->cost * $data->quantity)) {
-
-            $this->set('balance', 'high');
-
-            $missingBalance = 0;
-        }
-        else {
-            $missingBalance = ($productsResult->cost * $data->quantity) - $totalBalance;
-
-            $this->set('balance', 'low');
-            $this->set('missingBalance', $missingBalance);
-        }
-
-        $this->set('shipping_options', $shippingOptions);
-        $this->set('image_index', '0');
-        $this->set('id', $id);
-        $this->set('product', $productsResult);
+        $this->orderReviewer($id, false);
 
         $this->render('order_review');
     }
@@ -113,6 +123,41 @@ class OrdersController extends AppController
      */
     public function index()
     {
+        $this->loadModel('Products');
+        $this->loadModel('Wallets');
+        $this->loadModel('ShippingOptions');
+        $this->loadModel('Vendors');
+
+        $totalMissingBalance = 0;
+        $totalBalance = \App\Utility\Wallet::getWalletBalance($this->Auth->user('id'));
+
+        $orders = $this->Orders->find('all')->where(['Orders.user_id' => $this->Auth->user('id')])->all();
+
+        foreach ($orders as $order) {
+
+            $shipping_options = $order->shipping_option_id;
+
+            $productsResult = $this->Products->find('all', ['contain' => ['Vendors', 'Vendors.Users', 'ProductCategories', 'Countries', 'Orders', 'ProductCountries', 'ProductImages', 'Vendors.ShippingOptions']])->where(['Products.id' => $order->product_id])->first();
+            $shippingOptions = $this->ShippingOptions->find('all')->where(['id' => $shipping_options])->first();
+
+            if($totalBalance > (($productsResult->cost * $order->quantity) + $shippingOptions->get('shipping_cost'))) {
+
+                $missingBalance = 0;
+                $status = 1;
+            }
+            else {
+                $missingBalance = (($productsResult->cost * $order->quantity) + $shippingOptions->get('shipping_cost')) - $totalBalance;
+
+                $status = 0;
+            }
+
+            $totalMissingBalance = $totalMissingBalance + $missingBalance;
+
+            $order->set('status', $status);
+
+            $this->Orders->save($order);
+        }
+
         $this->paginate = [
             'contain' => ['Users', 'Products', 'ShippingOptions']
         ];

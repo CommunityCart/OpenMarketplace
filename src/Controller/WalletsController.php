@@ -19,13 +19,51 @@ class WalletsController extends AppController
      */
     public function index()
     {
+        $this->loadModel('Orders');
+
+        $orders = $this->Orders->find('all')->where(['user_id' => $this->Auth->user('id'), 'status' => 0])->all();
+
+        if(count($orders) > 0) {
+
+            $this->loadModel('Products');
+            $this->loadModel('ShippingOptions');
+
+            $total = 0;
+
+            foreach($orders as $order) {
+
+                $product = $this->Products->find('all')->where(['id' => $order->get('product_id')])->first();
+                $shipping = $this->ShippingOptions->find('all')->where(['id' => $order->get('shipping_option_id')])->first();
+
+                $total = $total + (($product->get('cost') * $order->get('quantity')) + $shipping->get('shipping_cost'));
+            }
+        }
+
         $this->paginate = [
-            'contain' => ['Users', 'Currencies']
+            'contain' => ['Users', 'Currencies', 'WalletTransactions']
         ];
 
+        $currentWallet = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')])->last();
         $wallets = $this->paginate($this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')]));
 
-        $this->set(compact('wallets'));
+        $totalBalance = 0;
+
+        foreach($wallets as $wallet)
+        {
+            $totalBalance = $totalBalance + $wallet->get('wallet_balance');
+        }
+
+        if(isset($total)) {
+
+            $missing = $totalBalance - $total;
+            $missing2 = $missing + ($missing * .1);
+            $missing2 = \App\Utility\Currency::Convert('usd', -$missing2, 'cmc');
+
+            $this->set('missing2', $missing2 . ' CMC');
+            $this->set('missing', $missing);
+            $this->set('total', $total);
+        }
+        $this->set(compact('wallets', 'currentWallet', 'totalBalance'));
         $this->set('_serialize', ['wallets']);
     }
 

@@ -22,6 +22,8 @@ use Cake\ORM\TableRegistry;
 use Cake\Controller\Component\AuthComponent;
 use Cake\ORM\Table;
 use App\Utility\Litecoin;
+use Cake\Cache\Cache;
+use Cake\Utility\Security;
 
 /**
  * Application Controller
@@ -75,15 +77,129 @@ class AppController extends Controller
 
     private function doWallet()
     {
-        $this->loadModel('Wallets');
+        if($this->Auth->user('id') === null) {
 
-        $wallets = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')])->last();
+            return;
+        }
+
+        $this->loadModel('Wallets');
+        $this->loadModel('WalletTransactions');
+
+        $wallets = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')])->all();
 
         $litecoin = new Litecoin();
 
         if(!isset($wallets) || count($wallets) == 0) {
 
-            print_r($litecoin->generateNewDepositAddress($this->Auth->user('id'))); die();
+            $firstWallet = $litecoin->generateNewDepositAddress($this->Auth->user('id'));
+            $privateKey = Security::encrypt($litecoin->getPrivateKeyByAddress($firstWallet), Configure::read('cryptokey'));
+
+            $newWallet = $this->Wallets->newEntity([
+                'user_id' => $this->Auth->user('id'),
+                'currency_id' => 4,
+                'address' => $firstWallet,
+                'private_key' => $privateKey,
+                'wallet_balance' => 0,
+                'created' => new \DateTime('now')
+            ]);
+
+            $this->Wallets->save($newWallet);
+        }
+        else {
+
+            $cacheTimestamp = Cache::read($this->Auth->user('id') . '.wallet_balances', 'memcache');
+
+            if(isset($cacheTimestamp) && $cacheTimestamp != false) {
+
+                $now = new \DateTime('now');
+                $diff = $now->diff($cacheTimestamp);
+            }
+            else {
+
+                $cacheTimestamp = new \DateTime('now');
+                $now = new \DateTime('now');
+                $diff = $now->diff($cacheTimestamp);
+            }
+
+            if($cacheTimestamp == '' || (($diff->i * 60) + $diff->s) > 300) {
+
+                foreach ($wallets as $wallet) {
+
+                    $response = $litecoin->checkAddressForDeposit($wallet->get('address'));
+
+                    $wallet->set('wallet_balance', $response);
+
+                    $this->Wallets->save($wallet);
+                }
+
+                Cache::write($this->Auth->user('id') . '.wallet_balances', new \DateTime('now'), 'memcache');
+            }
+            else {
+
+                return;
+            }
+        }
+
+        $lastWallet = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')])->last();
+
+        if($lastWallet->get('wallet_balance') > 0) {
+
+            $nextWallet = $litecoin->generateNewDepositAddress($this->Auth->user('id'));
+            $privateKeyUnencrypted = $litecoin->getPrivateKeyByAddress($nextWallet);
+            // $privateKey = Security::encrypt($privateKeyUnencrypted, Configure::read('cryptokey'));
+
+            $newNextWallet = $this->Wallets->newEntity([
+                'user_id' => $this->Auth->user('id'),
+                'currency_id' => 4,
+                'address' => $nextWallet,
+                'private_key' => $privateKeyUnencrypted,
+                'wallet_balance' => 0,
+                'created' => new \DateTime('now')
+            ]);
+
+            $this->Wallets->save($newNextWallet);
+        }
+
+        $account = $this->Auth->user('id');
+
+        if($account == '3dcd5245-6bd1-4685-a539-c51742042d71')
+        {
+            $account = 'hello';
+        }
+
+        $accountTransactions = $litecoin->getTransactionsByAccount($account);
+
+        foreach($accountTransactions as $accountTransaction) {
+
+            $wallet = $this->Wallets->find('all')->where(['address' => $accountTransaction['address']])->first();
+
+            $walletTransaction = $this->WalletTransactions->find('all')->where(['transaction_hash' => $accountTransaction['txid']])->first();
+
+            if(!isset($walletTransaction))
+            {
+                if($accountTransaction['category'] == 'receive')
+                {
+                    $amount = $accountTransaction['amount'];
+                }
+                else if($accountTransaction['category'] == 'send')
+                {
+                    $amount = -$accountTransaction['amount'];
+                }
+                else
+                {
+                    $amount = $accountTransaction['amount'];
+                }
+
+                $walletTransactionEntity = $this->WalletTransactions->newEntity([
+                    'wallet_id' => $wallet->get('id'),
+                    'transaction_hash' => $accountTransaction['txid'],
+                    'transaction_details' => json_encode($accountTransaction),
+                    'balance' => $amount,
+                    'created' => new \DateTime('now')
+                ]);
+
+                $this->WalletTransactions->save($walletTransactionEntity);
+            }
         }
     }
 
@@ -185,6 +301,7 @@ class AppController extends Controller
                     'menu'  => $product_categories
                 );
 
+                //$this->buildUserDashboard($collapse, $currentUser->role);
                 Sidebar::addMenuGroup($productNavigation, $currentUser->role);
                 $this->buildUserMenu($collapse, $currentUser->role);
 
@@ -220,6 +337,25 @@ class AppController extends Controller
         return $menus;
     }
 
+    private function buildUserDashboard($collapse, $role)
+    {
+        $userDashboard = array(
+            'type'  => 'link',
+            'link'  => 'Dashboard',
+            'icon'  => 'fa-dashboard',
+            'path'  => '/dashboard' . '?' . $collapse
+        );
+
+        Sidebar::addMenuGroup($userDashboard, $role);
+
+        $userHeader = array(
+            'type'  => 'header',
+            'header' => 'Welcome to Open Marketplace'
+        );
+
+        Sidebar::addMenuGroup($userHeader, $role);
+    }
+
     private function buildUserMenu($collapse, $role) {
 
         $userNavigation = array(
@@ -232,7 +368,7 @@ class AppController extends Controller
                     'path' => '/dashboard' . '?' . $collapse,
                     'icon' => 'fa-dashboard'
                 ],
-                'Orders' => [
+                'Shopping Cart' => [
                     'path' => '/orders' . '?' . $collapse,
                     'icon' => 'fa-shopping-cart'
                 ],
