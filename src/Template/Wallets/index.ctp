@@ -53,7 +53,14 @@
           </div>
         </div>
         <div class="box-body">
-          <pre><?= $totalBalance ?> CMC</pre>
+          <div class="row">
+            <div class="col-md-6">
+              <pre><?= $totalBalance ?> CMC</pre>
+            </div>
+            <div class="col-md-6">
+              <pre><?= $totalUSDBalance ?> USD</pre>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -70,7 +77,7 @@
       </div>
     </div>
   </div>
-  <div class="row">
+  <?php /* ?><div class="row">
     <div class="col-xs-12">
       <div class="box">
         <div class="box-header">
@@ -108,7 +115,7 @@
       </div>
       <!-- /.box -->
     </div>
-  </div>
+  </div> <?php */ ?>
   <div class="row">
     <div class="col-xs-12">
       <div class="box">
@@ -120,8 +127,6 @@
           <table class="table table-hover">
             <thead>
             <tr>
-              <th><?= $this->Paginator->sort('id') ?></th>
-              <th><?= $this->Paginator->sort('wallet_id') ?></th>
               <th><?= $this->Paginator->sort('transaction_hash') ?></th>
               <th><?= $this->Paginator->sort('balance') ?></th>
               <th><?= $this->Paginator->sort('created') ?></th>
@@ -131,8 +136,6 @@
             <?php foreach ($wallets as $wallet) { ?>
             <?php foreach ($wallet->wallet_transactions as $walletTransaction): ?>
             <tr>
-              <td><?= $this->Number->format($walletTransaction->id) ?></td>
-              <td><?= $wallet->id ?></td>
               <td><?= h($walletTransaction->transaction_hash) ?></td>
               <td><?= $this->Number->format($walletTransaction->balance) ?></td>
               <td><?= $walletTransaction->created ?></td>

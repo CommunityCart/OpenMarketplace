@@ -1,7 +1,7 @@
 <!-- Content Header (Page header) -->
 <section class="content-header">
   <h1>
-    Shopping Cart
+    <?= $title ?>
   </h1>
 </section>
 
@@ -10,15 +10,21 @@
   <div class="row">
     <div class="col-xs-12">
       <div class="box">
+        <?php if($title == 'Incoming Orders') { ?>
+        <?= $this->Form->create('null', ['url' => '/incoming-bulk']) ?>
+        <?php } ?>
         <!-- /.box-header -->
         <div class="box-body table-responsive no-padding">
           <table class="table table-hover">
             <thead>
               <tr>
+                <?php if($title == 'Incoming Orders') { ?>
+                <th></th>
+                <?php } ?>
                 <th><?= $this->Paginator->sort('product_id') ?></th>
                 <th><?= $this->Paginator->sort('quantity') ?></th>
                 <th><?= $this->Paginator->sort('shipping_option_id') ?></th>
-                <th>Total Cost in USD</th>
+                <th>USD</th>
                 <th><?= $this->Paginator->sort('status') ?></th>
                 <th><?= __('Actions') ?></th>
               </tr>
@@ -27,13 +33,18 @@
 
             <?php foreach ($orders as $order): ?>
               <tr>
-
+                <?php if($order->status == 2 && $title == 'Incoming Orders') { ?>
+                <td><input type="checkbox" name="bulk[]" value="<?= $order->id ?>" /></td>
+                <?php } ?>
                 <td><?= $order->has('product') ? $this->Html->link($order->product->title, ['controller' => 'Products', 'action' => 'view', $order->product->id]) : '' ?></td>
                 <td><?= $order->quantity ?></td>
 
                 <?php
                   $status = '';
                   switch($order->status) {
+                      case -1:
+                        $status = 'Order Rejected by Vendor';
+                        break;
                       case 0:
                         $status = 'Insufficient funds';
                         break;
@@ -50,7 +61,7 @@
                         $status = 'Order Shipped';
                         break;
                       case 5:
-                        $status = 'Order Rejected by Vendor';
+                        $status = 'Order Finalized';
                         break;
                   }
 
@@ -65,11 +76,22 @@
                   <?php if($order->status == 0) { ?>
                   <?= $this->Html->link(__('Make Deposit'), ['controller' => 'Wallet', 'action' => 'index'], ['class'=>'btn btn-success btn-xs']) ?>
                   <?= $this->Html->link(__('View'), ['action' => 'orderReview2', $order->id], ['class'=>'btn btn-info btn-xs']) ?>
-                  <?php } else { ?>
+                  <?php } else if($order->status == 1) { ?>
                   <?= $this->Html->link(__('Place Order'), ['controller' => 'Orders', 'action' => 'orderReview2', $order->id], ['class'=>'btn btn-success btn-xs']) ?>
+                  <?php } else { ?>
+                  <?= $this->Html->link(__('View'), ['action' => 'orderReview2', $order->id], ['class'=>'btn btn-info btn-xs']) ?>
                   <?php } ?>
 
+                  <?php if($order->status == 2 && $title == 'Incoming Orders') { ?>
+                  <?= $this->Html->link(__('Accept Order'), ['controller' => 'Orders', 'action' => 'accept', $order->id], ['class'=>'btn btn-success btn-xs']) ?>
+                  <?= $this->Html->link(__('Reject Order'), ['controller' => 'Orders', 'action' => 'reject', $order->id], ['class'=>'btn btn-danger btn-xs']) ?>
+                  <?php } ?>
+                  <?php if($order->status == 2 && $title == 'Shopping Cart') { ?>
+                  <?= $this->Html->link(__('Cancel Order'), ['controller' => 'Orders', 'action' => 'delete', $order->id], ['class'=>'btn btn-danger btn-xs']) ?>
+                  <?php } ?>
+                  <?php if($order->status == 0 || $order->status == 1 || $order->status < 0) { ?>
                   <?= $this->Form->postLink(__('Delete'), ['action' => 'delete', $order->id], ['confirm' => __('Confirm to delete this entry?'), 'class'=>'btn btn-danger btn-xs']) ?>
+                  <?php } ?>
                 </td>
               </tr>
             <?php endforeach; ?>
@@ -78,9 +100,16 @@
         </div>
         <!-- /.box-body -->
         <div class="box-footer clearfix">
-          <ul class="pagination pagination-sm no-margin pull-right">
-            <?php echo $this->Paginator->numbers(); ?>
-          </ul>
+          <div class="row pull-right">
+            <?php if($title == 'Incoming Orders') { ?>
+            <div class="col-md-4"><?= $this->Form->button(__('Accept Checked Orders'), ['class' => 'btn btn-success', 'name' => 'submit', 'value' => 'accept']) ?></div>
+            <div class="col-md-4 col-md-offset-2"><?= $this->Form->button(__('Reject Checked Orders'), ['class' => 'btn btn-danger', 'name' => 'submit', 'value' => 'reject']) ?></div>
+            <?php } ?>
+          </div>
+          <?php if($title == 'Incoming Orders') { ?>
+          <?= $this->Form->unlockField('bulk') ?>
+          <?= $this->Form->end() ?>
+          <?php } ?>
         </div>
       </div>
       <!-- /.box -->

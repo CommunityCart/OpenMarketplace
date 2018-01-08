@@ -132,6 +132,16 @@
                                 </div>
                             </div>
                             <hr/>
+                            <?= $this->Form->create('null', ['url' => '/submit/' . $order->id]); ?>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <?php if($order->status < 2 && $order->status > -1) { ?>
+                                        <center><span>Enter Your Shipping Details Below</span></center>
+                                    <?php } ?>
+                                    <textarea style="width:100%;" rows="4" name="shipping_details"><?php if(isset($order->shipping_details) && $order->shipping_details != '') { ?><?= $order->shipping_details ?><?php } ?></textarea>
+                                </div>
+                            </div>
+                            <hr/>
                             <?php if($balance == 'low') { ?>
                             <div class="row">
                                 <div class="col-md-12">
@@ -145,12 +155,16 @@
                                 </div>
                             </div>
                             <?php } else { ?>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <a href="/wallet" class="btn btn-success btn-block">Click Here Submit Order</a>
-                                </div>
-                            </div>
+                                <?php if($order->status < 2 && $order->status > -1) { ?>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <?= $this->Form->button(__('Click Here To Submit Order'), ['class' => 'btn btn-success btn-lg btn-block']) ?>
+                                        </div>
+                                    </div>
+                                <?php } ?>
                             <?php } ?>
+                            <?= $this->Form->unlockField('shipping_details') ?>
+                            <?= $this->Form->end() ?>
                         </div>
                     </div>
                     <!-- /.box-header -->

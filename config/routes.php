@@ -102,6 +102,12 @@ Router::connect('/order/order-review2/*', ['controller' => 'Orders', 'action' =>
 Router::connect('/wallet', ['controller' => 'Wallets', 'action' => 'index']);
 Router::connect('/wallet/deposit', ['controller' => 'Wallets', 'action' => 'deposit']);
 Router::connect('/vendor/*', ['controller' => 'Vendors', 'action' => 'view']);
+Router::connect('/incoming', ['controller' => 'Orders', 'action' => 'incoming']);
+Router::connect('/submit/*', ['controller' => 'Orders', 'action' => 'submit']);
+Router::connect('/cancel/*', ['controller' => 'Orders', 'action' => 'delete']);
+Router::connect('/accept/*', ['controller' => 'Orders', 'action' => 'accept']);
+Router::connect('/reject/*', ['controller' => 'Orders', 'action' => 'reject']);
+Router::connect('/incoming-bulk', ['controller' => 'Orders', 'action' => 'bulk']);
 
 
 Plugin::routes();

@@ -30,7 +30,8 @@ class OrdersController extends AppController
             $data = $order;
         }
 
-        $totalBalance = \App\Utility\Wallet::getWalletBalance($this->Auth->user('id'));
+        $balances = \App\Utility\Wallet::getWalletBalance($this->Auth->user('id'));
+        $totalBalance = $balances[0];
 
         if($idIsProduct == true) {
 
@@ -116,11 +117,6 @@ class OrdersController extends AppController
         $this->render('order_review');
     }
 
-    /**
-     * Index method
-     *
-     * @return \Cake\Http\Response|void
-     */
     public function index()
     {
         $this->loadModel('Products');
@@ -131,7 +127,7 @@ class OrdersController extends AppController
         $totalMissingBalance = 0;
         $totalBalance = \App\Utility\Wallet::getWalletBalance($this->Auth->user('id'));
 
-        $orders = $this->Orders->find('all')->where(['Orders.user_id' => $this->Auth->user('id')])->all();
+        $orders = $this->Orders->find('all')->where(['Orders.user_id' => $this->Auth->user('id'), 'Orders.status <' => 2, 'Orders.status >' => -1])->all();
 
         foreach ($orders as $order) {
 
@@ -163,79 +159,119 @@ class OrdersController extends AppController
         ];
         $orders = $this->paginate($this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where(['Orders.user_id' => $this->Auth->user('id')]));
 
+        $this->set('title', 'Shopping Cart');
         $this->set(compact('orders'));
         $this->set('_serialize', ['orders']);
     }
 
-    /**
-     * View method
-     *
-     * @param string|null $id Order id.
-     * @return \Cake\Http\Response|void
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function view($id = null)
+    public function incoming()
     {
-        $order = $this->Orders->get($id, [
-            'contain' => ['Users', 'Products', 'WalletTransactions', 'ShippingOptions', 'Disputes', 'Reviews']
-        ]);
+        $this->loadModel('Vendors');
 
-        $this->set('order', $order);
-        $this->set('_serialize', ['order']);
+        $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
+        $vendor_id = $vendor->get('id');
+
+        $this->paginate = [
+            'contain' => ['Users', 'Products', 'ShippingOptions']
+        ];
+        $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where(['Orders.status' => 2, 'Products.vendor_id' => $vendor_id])->all();
+
+        $this->set('title', 'Incoming Orders');
+        $this->set(compact('orders'));
+        $this->set('_serialize', ['orders']);
+
+        $this->render('index');
     }
 
-    /**
-     * Add method
-     *
-     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
-     */
-    public function add()
+    public function submit($id = null)
     {
-        $order = $this->Orders->newEntity();
-        if ($this->request->is('post')) {
-            $order = $this->Orders->patchEntity($order, $this->request->getData());
-            if ($this->Orders->save($order)) {
-                $this->Flash->success(__('The order has been saved.'));
+        $order = $this->Orders->get($id);
 
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('The order could not be saved. Please, try again.'));
+        if($order->get('user_id') != $this->Auth->user('id')) {
+
+            return $this->redirect($this->referer());
         }
-        $users = $this->Orders->Users->find('list', ['limit' => 200]);
-        $products = $this->Orders->Products->find('list', ['limit' => 200]);
-        $walletTransactions = $this->Orders->WalletTransactions->find('list', ['limit' => 200]);
-        $shippingOptions = $this->Orders->ShippingOptions->find('list', ['limit' => 200]);
-        $this->set(compact('order', 'users', 'products', 'walletTransactions', 'shippingOptions'));
-        $this->set('_serialize', ['order']);
+
+        $data = $this->request->getData('shipping_details');
+
+        $order->set('shipping_details', $data);
+        $order->set('status', 2);
+        $this->Orders->save($order);
+
+        return $this->redirect('/orders');
     }
 
-    /**
-     * Edit method
-     *
-     * @param string|null $id Order id.
-     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Network\Exception\NotFoundException When record not found.
-     */
-    public function edit($id = null)
+    public function accept($id = null)
     {
-        $order = $this->Orders->get($id, [
-            'contain' => []
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $order = $this->Orders->patchEntity($order, $this->request->getData());
-            if ($this->Orders->save($order)) {
-                $this->Flash->success(__('The order has been saved.'));
+        $order = $this->Orders->get($id);
 
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('The order could not be saved. Please, try again.'));
+        $this->loadModel('Products');
+        $this->loadModel('Vendors');
+
+        $product = $this->Products->get($order->product_id);
+        $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
+
+        if(!isset($vendor) || $vendor->id != $product->vendor_id) {
+
+            return $this->redirect($this->referer());
         }
-        $users = $this->Orders->Users->find('list', ['limit' => 200]);
-        $products = $this->Orders->Products->find('list', ['limit' => 200]);
-        $walletTransactions = $this->Orders->WalletTransactions->find('list', ['limit' => 200]);
-        $shippingOptions = $this->Orders->ShippingOptions->find('list', ['limit' => 200]);
-        $this->set(compact('order', 'users', 'products', 'walletTransactions', 'shippingOptions'));
-        $this->set('_serialize', ['order']);
+
+        $order->set('status', 3);
+        $this->Orders->save($order);
+
+        return $this->redirect($this->referer());
+    }
+
+    public function reject($id = null)
+    {
+        $order = $this->Orders->get($id);
+
+        $this->loadModel('Products');
+        $this->loadModel('Vendors');
+
+        $product = $this->Products->get($order->product_id);
+        $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
+
+        if(!isset($vendor) || $vendor->id != $product->vendor_id) {
+
+            return $this->redirect($this->referer());
+        }
+
+        $order->set('status', -1);
+        $this->Orders->save($order);
+
+        return $this->redirect($this->referer());
+    }
+
+    public function bulk()
+    {
+        $this->loadModel('Products');
+        $this->loadModel('Vendors');
+
+        $data = $this->request->getData();
+
+        foreach($data['bulk'] as $id)
+        {
+            $order = $this->Orders->get($id);
+            $product = $this->Products->get($order->product_id);
+            $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
+
+            if(!isset($vendor) || $vendor->id != $product->vendor_id) {
+
+                return $this->redirect($this->referer());
+            }
+
+            if($data['submit'] == 'accept') {
+                $order->set('status', 3);
+            }
+            else {
+                $order->set('status', -1);
+            }
+
+            $this->Orders->save($order);
+        }
+
+        return $this->redirect($this->referer());
     }
 
     /**
@@ -247,12 +283,20 @@ class OrdersController extends AppController
      */
     public function delete($id = null)
     {
-        $this->request->allowMethod(['post', 'delete']);
         $order = $this->Orders->get($id);
-        if ($this->Orders->delete($order)) {
-            $this->Flash->success(__('The order has been deleted.'));
-        } else {
-            $this->Flash->error(__('The order could not be deleted. Please, try again.'));
+
+        if($order->get('user_id') != $this->Auth->user('id')) {
+
+            return $this->redirect($this->referer());
+        }
+
+        if($order->get('status') == 0 || $order->get('status') == 1 || $order->get('status') == 2) {
+
+            if ($this->Orders->delete($order)) {
+                $this->Flash->success(__('The order has been deleted.'));
+            } else {
+                $this->Flash->error(__('The order could not be deleted. Please, try again.'));
+            }
         }
 
         return $this->redirect(['action' => 'index']);

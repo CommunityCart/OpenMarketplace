@@ -52,8 +52,20 @@
 $permissions = [
     [
         'role' => ['user', 'vendor'],
+        'controller' => ['Orders'],
+        'action' => ['submit'],
+        'allowed' => true
+    ],
+    [
+        'role' => ['user', 'vendor'],
         'controller' => ['Dashboard', 'Shop'],
         'action' => ['index','favorites'],
+        'allowed' => true
+    ],
+    [
+        'role' => ['vendor'],
+        'controller' => ['Orders'],
+        'action' => ['incoming', 'accept', 'reject', 'bulk'],
         'allowed' => true
     ],
     [

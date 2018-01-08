@@ -46,12 +46,10 @@ class WalletsController extends AppController
         $currentWallet = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')])->last();
         $wallets = $this->paginate($this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')]));
 
-        $totalBalance = 0;
+        $totalBalanceMinusEscrowFinalized = \App\Utility\Wallet::getWalletBalance($this->Auth->user('id'));
 
-        foreach($wallets as $wallet)
-        {
-            $totalBalance = $totalBalance + $wallet->get('wallet_balance');
-        }
+        $totalBalance = $totalBalanceMinusEscrowFinalized[1];
+        $totalUSDBalance = $totalBalanceMinusEscrowFinalized[0];
 
         if(isset($total)) {
 
@@ -63,7 +61,7 @@ class WalletsController extends AppController
             $this->set('missing', $missing);
             $this->set('total', $total);
         }
-        $this->set(compact('wallets', 'currentWallet', 'totalBalance'));
+        $this->set(compact('wallets', 'currentWallet', 'totalBalance', 'totalUSDBalance'));
         $this->set('_serialize', ['wallets']);
     }
 

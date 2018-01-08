@@ -77,7 +77,7 @@ class AppController extends Controller
 
     private function doWallet()
     {
-        if($this->Auth->user('id') === null) {
+        if(!isset($this->Auth) || $this->Auth->user('id') === null) {
 
             return;
         }
@@ -424,6 +424,22 @@ class AppController extends Controller
             'icon'  => 'fa-dollar',
             'css'   => 'active non-active',
             'menu' => [
+                'Incoming Orders' => [
+                    'path' => '/incoming' . '?' . $collapse,
+                    'icon' => 'fa-shopping-cart'
+                ],
+                'Pending Shipment' => [
+                    'path' => '/pending-shipment' . '?' . $collapse,
+                    'icon' => 'fa-truck'
+                ],
+                'Shipped Orders' => [
+                    'path' => '/shipped' . '?' . $collapse,
+                    'icon' => 'fa-ship'
+                ],
+                'Finalized Orders' => [
+                    'path' => '/finalized' . '?' . $collapse,
+                    'icon' => 'fa-thumbs-up'
+                ],
                 'Products' => [
                     'path' => '/products' . '?' . $collapse,
                     'icon' => 'fa-empire'

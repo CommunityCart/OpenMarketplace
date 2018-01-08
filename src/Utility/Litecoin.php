@@ -71,4 +71,22 @@ class Litecoin
     {
         return $this->wallet->getBalances($inlcude_empty);
     }
+
+    public function sendFromAccount($account, $address, $amount)
+    {
+        return $this->wallet->sendFromAccount($account, $address, $amount);
+    }
+
+    /**
+     * Sends coins to multiple addresses
+     *
+     * @param  string $account   Name of the from account
+     * @param  array  $addresses ["address1" => "amount1", "address2" => "amount2"]
+     * @param  string $comment   A comment on this transaction
+     * @return array
+     */
+    public function sendManyFromAccount($account, array $addresses)
+    {
+        return $this->wallet->sendManyFromAccount($account, $addresses);
+    }
 }
