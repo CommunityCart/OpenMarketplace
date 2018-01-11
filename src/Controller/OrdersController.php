@@ -18,6 +18,7 @@ class OrdersController extends AppController
         $this->loadModel('Wallets');
         $this->loadModel('ShippingOptions');
         $this->loadModel('Vendors');
+        $this->loadModel('Disputes');
 
         $order = $this->Orders->find('all', ['contain' => ['Reviews']])->where(['id' => $id, 'user_id' => $this->Auth->user('id')])->first();
 
@@ -94,6 +95,18 @@ class OrdersController extends AppController
             $this->Orders->save($order);
         }
 
+        if($order->get('status') == -2)
+        {
+            $dispute = $this->Disputes->find('all')->where(['order_id' => $order->id])->first();
+
+            $this->set('dispute', $dispute);
+        }
+
+        if($this->Auth->user('role') == 'vendor') {
+
+            $this->set('userIsVendor', true);
+        }
+
         $this->set('totalBalance', $totalBalance);
         $this->set('order', $order);
         $this->set('vendorRating', $vendorRating->get('rating'));
@@ -155,10 +168,7 @@ class OrdersController extends AppController
             $this->Orders->save($order);
         }
 
-        $this->paginate = [
-            'contain' => ['Users', 'Products', 'ShippingOptions']
-        ];
-        $orders = $this->paginate($this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where(['Orders.user_id' => $this->Auth->user('id')]));
+        $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where(['Orders.user_id' => $this->Auth->user('id')])->all();
 
         $this->set('title', 'Shopping Cart');
         $this->set(compact('orders'));
@@ -191,6 +201,54 @@ class OrdersController extends AppController
         $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where(['Orders.status' => 2, 'Products.vendor_id' => $vendor_id])->all();
 
         $this->set('title', 'Incoming Orders');
+        $this->set(compact('orders'));
+        $this->set('_serialize', ['orders']);
+
+        $this->render('index');
+    }
+
+    public function shippedOrders()
+    {
+        $this->loadModel('Vendors');
+
+        $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
+        $vendor_id = $vendor->get('id');
+
+        $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where(['Orders.status' => 4, 'Products.vendor_id' => $vendor_id])->all();
+
+        $this->set('title', 'Shipped Orders');
+        $this->set(compact('orders'));
+        $this->set('_serialize', ['orders']);
+
+        $this->render('index');
+    }
+
+    public function finalizedOrders()
+    {
+        $this->loadModel('Vendors');
+
+        $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
+        $vendor_id = $vendor->get('id');
+
+        $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where(['Orders.status >' => 4, 'Products.vendor_id' => $vendor_id])->all();
+
+        $this->set('title', 'Finalized Orders');
+        $this->set(compact('orders'));
+        $this->set('_serialize', ['orders']);
+
+        $this->render('index');
+    }
+
+    public function disputedOrders()
+    {
+        $this->loadModel('Vendors');
+
+        $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
+        $vendor_id = $vendor->get('id');
+
+        $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where(['Orders.status' => -2, 'Products.vendor_id' => $vendor_id])->all();
+
+        $this->set('title', 'Disputed Orders');
         $this->set(compact('orders'));
         $this->set('_serialize', ['orders']);
 
@@ -238,6 +296,83 @@ class OrdersController extends AppController
         return $this->redirect($this->referer());
     }
 
+    public function openDispute($id = null)
+    {
+        $this->loadModel('Products');
+        $this->loadModel('ShippingOptions');
+        $this->loadModel('Vendors');
+        $this->loadModel('Users');
+
+        $order = $this->Orders->get($id);
+        $product = $this->Products->get($order->get('product_id'));
+        $shipping = $this->ShippingOptions->get($order->get('shipping_option_id'));
+        $vendor = $this->Vendors->get($product->get('vendor_id'));
+        $vendor_user = $this->Users->get($vendor->get('user_id'));
+
+        $this->set('id', $id);
+        $this->set('order', $order);
+        $this->set('product', $product);
+        $this->set('shipping', $shipping);
+        $this->set('vendor', $vendor);
+        $this->set('vendor_user', $vendor_user);
+
+        $this->render('dispute');
+    }
+
+    public function dispute($id = null)
+    {
+        $order = $this->Orders->get($id);
+
+        $this->amiuser($order);
+
+        $order->set('status', -2);
+        $this->Orders->save($order);
+
+        $this->loadModel('Disputes');
+
+        $data = $this->request->getData();
+
+        $never_arrived = 0;
+        $wrong_product = 0;
+        $bad_quality = 0;
+        $other = 0;
+
+        switch($data['dispute_radio'])
+        {
+            case 'null_route':
+                $never_arrived = 1;
+                break;
+            case 'wrong':
+                $wrong_product = 1;
+                break;
+            case 'quality':
+                $bad_quality = 1;
+                break;
+            default:
+                $other = 1;
+                break;
+        }
+
+        $comment = '';
+        if(isset($data['other_comment'])) {
+            $comment = $data['other_comment'];
+        }
+
+        $dispute = $this->Disputes->newEntity([
+            'order_id' => $order->id,
+            'never_arrived' => $never_arrived,
+            'wrong_product' => $wrong_product,
+            'bad_quality' => $bad_quality,
+            'other' => $other,
+            'comment' => $comment,
+            'created' => new \DateTime('now')
+        ]);
+
+        $this->Disputes->save($dispute);
+
+        return $this->redirect('/orders');
+    }
+
     public function shipped($id = null)
     {
         $order = $this->Orders->get($id);
@@ -248,6 +383,13 @@ class OrdersController extends AppController
         $order->set('shipped', new \DateTime('now'));
         $this->Orders->save($order);
 
+        if($order->get('finalize_early') == 1) {
+
+            $order->set('status', 5);
+            $order->set('finalized', new \DateTime('now'));
+            $this->Orders->save($order);
+        }
+
         return $this->redirect($this->referer());
     }
 
@@ -257,9 +399,29 @@ class OrdersController extends AppController
 
         $this->amiuser($order);
 
-        $order->set('status', 5);
-        $order->set('finalized', new \DateTime('now'));
-        $this->Orders->save($order);
+        if($order->get('status') == 2 || $order->get('status') == 3) {
+            $order->set('finalize_early', 1);
+            $this->Orders->save($order);
+        }
+        else {
+            $order->set('status', 5);
+            $order->set('finalized', new \DateTime('now'));
+            $this->Orders->save($order);
+        }
+
+        return $this->redirect($this->referer());
+    }
+
+    public function unfinalize($id = null)
+    {
+        $order = $this->Orders->get($id);
+
+        $this->amiuser($order);
+
+        if($order->get('status') == 2 || $order->get('status') == 3) {
+            $order->set('finalize_early', 0);
+            $this->Orders->save($order);
+        }
 
         return $this->redirect($this->referer());
     }
@@ -272,9 +434,15 @@ class OrdersController extends AppController
 
         $this->amiuser($order);
 
+        $this->loadModel('Products');
+        $this->loadModel('Vendors');
         $this->loadModel('Reviews');
 
         $review = $this->Reviews->find('all')->where(['order_id' => $id])->first();
+
+        $oldStars = 0;
+        $stars = 0;
+        $reviewCount = 0;
 
         if(!isset($review))
         {
@@ -287,8 +455,14 @@ class OrdersController extends AppController
             ]);
 
             $this->Reviews->save($new_review);
+
+            $stars = $data['review_star'];
+            $reviewCount = 1;
         }
         else {
+
+            $oldStars = $review->get('stars');
+            $stars = $data['review_star'];
 
             $review->set('comment', $data['review_comment']);
             $review->set('stars', $data['review_star']);
@@ -301,51 +475,19 @@ class OrdersController extends AppController
         $order->set('rated', new \DateTime('now'));
         $this->Orders->save($order);
 
-        $this->loadModel('Products');
-        $this->loadModel('Vendors');
-
-        $totalStars = 0;
-        $totalReviews = 0;
-
-        // TODO: Add columns to tables so that we dont have to grab every review to recalculate ratings
-
         $product = $this->Products->find('all')->where(['id' => $order->product_id])->first();
         $vendor_id = $product->get('vendor_id');
-        $products = $this->Products->find('all')->where(['vendor_id' => $vendor_id])->all();
-
-        foreach($products as $product) {
-
-            $orders = $this->Orders->find('all', ['contain' => ['Reviews']])->where(['product_id' => $product->get('id')])->all();
-
-            $totalProductStars = 0;
-            $totalProductReviews = 0;
-
-            foreach ($orders as $order) {
-
-                if (isset($order->reviews[0])) {
-
-                    $totalProductStars = $totalProductStars + $order->reviews[0]->stars;
-                    $totalProductReviews = $totalProductReviews + 1;
-                }
-            }
-
-            if($totalProductReviews > 0) {
-                $rating = $totalProductStars / $totalProductReviews;
-
-                $product->set('rating', $rating);
-                $this->Products->save($product);
-            }
-
-            $totalStars = $totalStars + $totalProductStars;
-            $totalReviews = $totalReviews + $totalProductReviews;
-        }
-
         $vendor = $this->Vendors->find('all')->where(['id' => $vendor_id])->first();
 
-        $vendorRating = $totalStars / $totalReviews;
-
-        $vendor->set('rating', $vendorRating);
+        $vendor->set('total_stars', (($vendor->get('total_stars') - $oldStars) + $stars));
+        $vendor->set('total_reviews', $vendor->get('total_reviews') + $reviewCount);
+        $vendor->set('rating', $vendor->get('total_stars') / $vendor->get('total_reviews'));
         $this->Vendors->save($vendor);
+
+        $product->set('total_stars', (($product->get('total_stars') - $oldStars) + $stars));
+        $product->set('total_reviews', $product->get('total_reviews') + $reviewCount);
+        $product->set('rating', $product->get('total_stars') / $product->get('total_reviews'));
+        $this->Products->save($product);
 
         return $this->redirect($this->referer());
     }

@@ -42,7 +42,9 @@
                                                 <h4><?= $order->user->username ?></h4>
                                             </div>
                                             <div class="col-md-6">
-                                                <a href="/compose/<?= $order->user->id ?>" class="btn btn-primary btn-block" target="_blank">Send Message To <?= $order->user->username ?> </a>
+                                                <?php if($order->finalize_early == 1) { ?>
+                                                <h4 style="padding: 4px; background-color: limegreen;">Finalize Early: <b>YES</b></h4>
+                                                <?php } ?>
                                             </div>
                                         </div>
                                         <div class="row">
@@ -80,7 +82,10 @@
                     </div>
                     <div class="box-footer clearfix">
                         <div class="row pull-right">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
+                                <a href="/compose/<?= $order->user->id ?>" class="btn btn-primary btn-lg btn-block" target="_blank">Send Message</a>
+                            </div>
+                            <div class="col-md-6">
                                 <a href="/shipped/<?= $order->id ?>" class="btn btn-success btn-lg btn-block">Mark Shipped</a>
                             </div>
                         </div>
@@ -93,7 +98,7 @@
                 <div class="box-footer clearfix">
                     <div class="row pull-right">
                         <div class="col-md-12">
-                            <a href="/shipped/<?= $order->id ?>" class="btn btn-success btn-lg btn-block">Mark All Checked Shipped</a>
+                            <a href="/bulk-shipped" class="btn btn-success btn-lg btn-block">Mark All Checked Shipped</a>
                         </div>
                     </div>
                 </div>

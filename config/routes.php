@@ -107,11 +107,16 @@ Router::connect('/submit/*', ['controller' => 'Orders', 'action' => 'submit']);
 Router::connect('/cancel/*', ['controller' => 'Orders', 'action' => 'delete']);
 Router::connect('/accept/*', ['controller' => 'Orders', 'action' => 'accept']);
 Router::connect('/reject/*', ['controller' => 'Orders', 'action' => 'reject']);
+Router::connect('/dispute/*', ['controller' => 'Orders', 'action' => 'openDispute']);
+Router::connect('/open-dispute/*', ['controller' => 'Orders', 'action' => 'dispute']);
 Router::connect('/shipped/*', ['controller' => 'Orders', 'action' => 'shipped']);
 Router::connect('/finalize/*', ['controller' => 'Orders', 'action' => 'finalize']);
+Router::connect('/unfinalize/*', ['controller' => 'Orders', 'action' => 'unfinalize']);
 Router::connect('/rate/*', ['controller' => 'Orders', 'action' => 'rate']);
 Router::connect('/incoming-bulk', ['controller' => 'Orders', 'action' => 'bulk']);
 Router::connect('/pending-shipment', ['controller' => 'Orders', 'action' => 'shipments']);
-
+Router::connect('/shipped-orders', ['controller' => 'Orders', 'action' => 'shipped_orders']);
+Router::connect('/finalized-orders', ['controller' => 'Orders', 'action' => 'finalized_orders']);
+Router::connect('/disputed-orders', ['controller' => 'Orders', 'action' => 'disputed_orders']);
 
 Plugin::routes();

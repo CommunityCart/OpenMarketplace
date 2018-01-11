@@ -384,14 +384,6 @@ class AppController extends Controller
                     'path' => '/notifications' . '?' . $collapse,
                     'icon' => 'fa-bell-o'
                 ],
-                'Help Desk' => [
-                    'path' => '/support' . '?' . $collapse,
-                    'icon' => 'fa-question-circle'
-                ],
-                'Disputes' => [
-                    'path' => '/disputes' . '?' . $collapse,
-                    'icon' => 'fa-exclamation'
-                ],
                 'Invites' => [
                     'path' => '/invites' . '?' . $collapse,
                     'icon' => 'fa-bullhorn'
@@ -433,12 +425,16 @@ class AppController extends Controller
                     'icon' => 'fa-truck'
                 ],
                 'Shipped Orders' => [
-                    'path' => '/shipped' . '?' . $collapse,
+                    'path' => '/shipped-orders' . '?' . $collapse,
                     'icon' => 'fa-ship'
                 ],
                 'Finalized Orders' => [
-                    'path' => '/finalized' . '?' . $collapse,
+                    'path' => '/finalized-orders' . '?' . $collapse,
                     'icon' => 'fa-thumbs-up'
+                ],
+                'Disputed Orders' => [
+                    'path' => '/disputed-orders' . '?' . $collapse,
+                    'icon' => 'fa-thumbs-down'
                 ],
                 'Products' => [
                     'path' => '/products' . '?' . $collapse,

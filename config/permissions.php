@@ -53,7 +53,7 @@ $permissions = [
     [
         'role' => ['user', 'vendor'],
         'controller' => ['Orders'],
-        'action' => ['submit'],
+        'action' => ['submit', 'dispute', 'openDispute'],
         'allowed' => true
     ],
     [
@@ -65,7 +65,7 @@ $permissions = [
     [
         'role' => ['vendor'],
         'controller' => ['Orders'],
-        'action' => ['incoming', 'accept', 'reject', 'bulk', 'shipments', 'shipped', 'finalize', 'rate'],
+        'action' => ['incoming', 'accept', 'reject', 'bulk', 'shipments', 'shipped', 'finalize', 'rate', 'unfinalize', 'shippedOrders', 'finalizedOrders', 'disputedOrders'],
         'allowed' => true
     ],
     [

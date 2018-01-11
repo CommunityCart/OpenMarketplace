@@ -61,7 +61,7 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <span><a href="/vendor/<?= $product->vendor->id ?>"><?= $product->vendor->user->username ?></a>&nbsp;&nbsp;(<?= $vendorOrderCount ?> / <?= $vendorRating ?> Stars)</span>
+                                            <span><a href="/vendor/<?= $product->vendor->id ?>"><?= $product->vendor->user->username ?></a>&nbsp;&nbsp;(<?= $vendorOrderCount ?>) (<?= $vendorRating ?> Stars)</span>
                                         </div>
                                     </div>
                                     <hr/>
@@ -88,6 +88,56 @@
                                     <hr/>
                                 </div>
                             </div>
+                            <?php if($order->status == -2) { ?>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h4>Order Disputed By User</h4><hr/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <span>Someone from the staff will contact you shortly.</span>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h4>Dispute Details</h4><hr/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <?php if($dispute->never_arrived == 1) { ?>
+                                            <span>Order Never Arrived</span>
+                                            <?php } else if($dispute->wrong_product == 1) { ?>
+                                            <span>Wrong Product Delivered</span>
+                                            <?php } else if($dispute->bad_quality == 1) { ?>
+                                            <span>Product Not As Described</span>
+                                            <?php } ?>
+                                        </div>
+                                    </div>
+                                    <br/>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <span><?= $dispute->comment ?></span>
+                                        </div>
+                                    </div>
+                                    <?php if($userIsVendor == true) { ?>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <a href="/refund/<?= $order->id ?>" class="btn btn-success btn-lg btn-block">Refund 100%</a>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <a href="/refund50/<?= $order->id ?>" class="btn btn-success btn-lg btn-block">Refund 50%</a>
+                                        </div>
+                                    </div>
+                                    <?php } ?>
+                                </div>
+                            </div>
+                            <?php } ?>
                             <?php if($order->status < 2 && $order->status > -1) { ?>
                             <div class="row">
                                 <div class="col-md-12">
@@ -190,6 +240,16 @@
                                         </div>
                                     </div>
                                     <?php } ?>
+                                    <?php if($order->finalize_early == 1) { ?>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h5>Finalize Early</h5><hr/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h5>YES</h5><hr/>
+                                        </div>
+                                    </div>
+                                    <?php } ?>
                                 </div>
                             </div>
                             <?php } ?>
@@ -272,7 +332,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <center><span>Enter Your Shipping Details Below</span></center>
-                                    <textarea style="width:100%;" rows="4" name="shipping_details"><?php if(isset($order->shipping_details) && $order->shipping_details != '') { ?><?= $order->shipping_details ?><?php } ?></textarea>
+                                    <textarea style="width:100%;" rows="4" name="shipping_details" required><?php if(isset($order->shipping_details) && $order->shipping_details != '') { ?><?= $order->shipping_details ?><?php } ?></textarea>
                                 </div>
                             </div>
                             <hr/>
@@ -296,16 +356,39 @@
                                             <?= $this->Form->button(__('Click Here To Submit Order'), ['class' => 'btn btn-success btn-lg btn-block']) ?>
                                         </div>
                                     </div>
-                                <?php } else if($order->status == 2 || $order->status == 3) { ?>
+                                <?php } else if($order->status == 2) { ?>
                                     <div class="row">
+                                        <?php if($order->finalize_early == 0) { ?>
                                         <div class="col-md-6">
-                                            <a href="/dispute/<?= $order->id ?>" class="btn btn-danger btn-lg btn-block">Open Dispute</a>
+                                            <?= $this->Html->link(__('Cancel Order'), ['controller' => 'Orders', 'action' => 'delete', $order->id], ['class'=>'btn btn-danger btn-lg btn-block']) ?>
                                         </div>
                                         <div class="col-md-6">
                                             <a href="/finalize/<?= $order->id ?>" class="btn btn-success btn-lg btn-block">Finalize Early</a>
                                         </div>
+                                        <?php } else if($order->finalize_early == 1) { ?>
+                                        <div class="col-md-12">
+                                            <a href="/unfinalize/<?= $order->id ?>" class="btn btn-danger btn-lg btn-block">Remove Finalize Early</a>
+                                        </div>
+                                        <?php } ?>
                                     </div>
-                                    <?php } else if($order->status == 4) { ?>
+                                <?php } else if($order->status == 3) { ?>
+                                    <?php if($order->finalize_early == 0) { ?>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <a href="/dispute/<?= $order->id ?>" class="btn btn-danger btn-lg btn-block">Open Dispute</a>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <a href="/finalize/<?= $order->id ?>" class="btn btn-success btn-lg btn-block">Finalize Early</a>
+                                            </div>
+                                        </div>
+                                    <?php } else if($order->finalize_early == 1) { ?>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <a href="/unfinalize/<?= $order->id ?>" class="btn btn-danger btn-lg btn-block">Remove Finalize Early</a>
+                                            </div>
+                                        </div>
+                                    <?php } ?>
+                                <?php } else if($order->status == 4) { ?>
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <a href="/dispute/<?= $order->id ?>" class="btn btn-danger btn-lg btn-block">Open Dispute</a>
@@ -314,7 +397,7 @@
                                                 <a href="/finalize/<?= $order->id ?>" class="btn btn-success btn-lg btn-block">Finalize Order</a>
                                             </div>
                                         </div>
-                                    <?php } ?>
+                                <?php } ?>
                             <?php } ?>
                             <?= $this->Form->unlockField('shipping_details') ?>
                             <?= $this->Form->end() ?>

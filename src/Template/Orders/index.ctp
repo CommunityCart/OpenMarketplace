@@ -21,6 +21,9 @@
                 <?php if($title == 'Incoming Orders') { ?>
                 <th></th>
                 <?php } ?>
+                <?php if($title != 'Shopping Cart') { ?>
+                <th>Username</th>
+                <?php } ?>
                 <th><?= $this->Paginator->sort('product_id') ?></th>
                 <th><?= $this->Paginator->sort('quantity') ?></th>
                 <th><?= $this->Paginator->sort('shipping_option_id') ?></th>
@@ -36,12 +39,18 @@
                 <?php if($order->status == 2 && $title == 'Incoming Orders') { ?>
                 <td><input type="checkbox" name="bulk[]" value="<?= $order->id ?>" /></td>
                 <?php } ?>
+                <?php if($title != 'Shopping Cart') { ?>
+                <td><?= $order->user->username ?></td>
+                <?php } ?>
                 <td><?= $order->has('product') ? $this->Html->link($order->product->title, ['controller' => 'Products', 'action' => 'view', $order->product->id]) : '' ?></td>
                 <td><?= $order->quantity ?></td>
 
                 <?php
                   $status = '';
                   switch($order->status) {
+                      case -2:
+                        $status = 'Order Disputed by User';
+                        break;
                       case -1:
                         $status = 'Order Rejected by Vendor';
                         break;
@@ -76,27 +85,34 @@
                 <td><?= $status ?></td>
                 <td class="actions" style="white-space:nowrap">
 
-                  <?php if($order->status == 0) { ?>
+                  <?php if($order->status == 0 && $title == 'Shopping Cart') { ?>
                   <?= $this->Html->link(__('Make Deposit'), ['controller' => 'Wallet', 'action' => 'index'], ['class'=>'btn btn-success btn-xs']) ?>
                   <?= $this->Html->link(__('View'), ['action' => 'orderReview2', $order->id], ['class'=>'btn btn-info btn-xs']) ?>
-                  <?php } else if($order->status == 1) { ?>
+                  <?php } else if($order->status == 1 && $title == 'Shopping Cart') { ?>
                   <?= $this->Html->link(__('Place Order'), ['controller' => 'Orders', 'action' => 'orderReview2', $order->id], ['class'=>'btn btn-success btn-xs']) ?>
-                  <?php } else if($order->status == 5) { ?>
+                  <?php } else if($order->status == 5 && $title == 'Shopping Cart') { ?>
                   <?= $this->Html->link(__('Review Order'), ['action' => 'orderReview2', $order->id], ['class'=>'btn btn-xs btn-success']) ?>
-                  <?php } else if($order->status == 6) { ?>
+                  <?php } else if($order->status == 6 && $title == 'Shopping Cart') { ?>
                   <?= $this->Html->link(__('Update Review'), ['action' => 'orderReview2', $order->id], ['class'=>'btn btn-xs btn-success']) ?>
                   <?php } else { ?>
                   <?= $this->Html->link(__('View'), ['action' => 'orderReview2', $order->id], ['class'=>'btn btn-info btn-xs']) ?>
+                  <?php } ?>
+
+                  <?php if($order->status == -2 && $title == 'Disputed Orders') { ?>
+                  <?= $this->Html->link(__('Full Refund'), ['controller' => 'Orders', 'action' => 'fullRefund', $order->id], ['class'=>'btn btn-success btn-xs']) ?>
+                  <?= $this->Html->link(__('50% Refund'), ['controller' => 'Orders', 'action' => 'halfRefund', $order->id], ['class'=>'btn btn-success btn-xs']) ?>
                   <?php } ?>
 
                   <?php if($order->status == 2 && $title == 'Incoming Orders') { ?>
                   <?= $this->Html->link(__('Accept Order'), ['controller' => 'Orders', 'action' => 'accept', $order->id], ['class'=>'btn btn-success btn-xs']) ?>
                   <?= $this->Html->link(__('Reject Order'), ['controller' => 'Orders', 'action' => 'reject', $order->id], ['class'=>'btn btn-danger btn-xs']) ?>
                   <?php } ?>
+
                   <?php if($order->status == 2 && $title == 'Shopping Cart') { ?>
                   <?= $this->Html->link(__('Cancel Order'), ['controller' => 'Orders', 'action' => 'delete', $order->id], ['class'=>'btn btn-danger btn-xs']) ?>
                   <?php } ?>
-                  <?php if($order->status == 0 || $order->status == 1 || $order->status < 0) { ?>
+
+                  <?php if(($order->status == 0 || $order->status == 1 || $order->status == -1) && $title == 'Shopping Cart') { ?>
                   <?= $this->Form->postLink(__('Delete'), ['action' => 'delete', $order->id], ['confirm' => __('Confirm to delete this entry?'), 'class'=>'btn btn-danger btn-xs']) ?>
                   <?php } ?>
                 </td>
