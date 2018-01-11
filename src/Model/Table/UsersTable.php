@@ -14,6 +14,7 @@ class UsersTable extends BaseUsersTable
         parent::initialize($config);
 
         $this->hasMany('users_subscriptions', ['className' => 'UsersSubscriptions'])->setForeignKey('user_id')->setProperty('user');
+        $this->hasMany('orders', ['className' => 'Orders'])->setForeignKey('user_id')->setProperty('orders');
 
         $this->removeBehavior('Register');
         $this->addBehavior('Register');

@@ -61,7 +61,7 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <span><a href="/vendor/<?= $product->vendor->id ?>"><?= $product->vendor->user->username ?></a>&nbsp;&nbsp;(<?= $vendorOrderCount ?> / <?= $vendorRating ?>)</span>
+                                            <span><a href="/vendor/<?= $product->vendor->id ?>"><?= $product->vendor->user->username ?></a>&nbsp;&nbsp;(<?= $vendorOrderCount ?> / <?= $vendorRating ?> Stars)</span>
                                         </div>
                                     </div>
                                     <hr/>
@@ -88,6 +88,7 @@
                                     <hr/>
                                 </div>
                             </div>
+                            <?php if($order->status < 2 && $order->status > -1) { ?>
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="row">
@@ -132,16 +133,150 @@
                                 </div>
                             </div>
                             <hr/>
-                            <?= $this->Form->create('null', ['url' => '/submit/' . $order->id]); ?>
+                            <?php } else if($order->status >= 2) { ?>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <?php if($order->status < 2 && $order->status > -1) { ?>
-                                        <center><span>Enter Your Shipping Details Below</span></center>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h5>Ordered</h5><hr/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h5><?= $order->created ?></h5><hr/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h5>Accepted</h5><hr/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <?php if($order->accepted != '') { ?>
+                                            <h5><?= $order->accepted ?></h5><hr/>
+                                            <?php } else { ?>
+                                            <h5>Pending</h5><hr/>
+                                            <?php } ?>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h5>Shipped</h5><hr/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <?php if($order->shipped != '') { ?>
+                                            <h5><?= $order->shipped ?></h5><hr/>
+                                            <?php } else { ?>
+                                            <h5>Pending</h5><hr/>
+                                            <?php } ?>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h5>Finalized</h5><hr/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <?php if($order->finalized != '') { ?>
+                                            <h5><?= $order->finalized ?></h5><hr/>
+                                            <?php } else { ?>
+                                            <h5>Pending</h5><hr/>
+                                            <?php } ?>
+                                        </div>
+                                    </div>
+                                    <?php if($order->rated != '') { ?>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h5>Rated</h5><hr/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h5><?= $order->rated ?></h5><hr/>
+                                        </div>
+                                    </div>
                                     <?php } ?>
+                                </div>
+                            </div>
+                            <?php } ?>
+
+                            <?php if($order->status >= 5) { ?>
+
+                            <?= $this->Form->create('null', ['url' => '/rate/' . $order->id]); ?>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <?php if($order->status == 5) { ?>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <center><h4>Please Submit Review</h4></center><br/>
+                                        </div>
+                                    </div>
+                                    <?php } ?>
+                                    <div class="row">
+                                        <div class="col-md-1">&nbsp;</div>
+                                        <div class="col-md-2">
+                                            <center><input type="radio" name="review_star" value="1" required <?php if(isset($order->reviews[0]) && $order->reviews[0]->stars == 1) { ?> checked="checked" <?php } ?>/></center>
+                                            <label for="review_star" style="text-align: center">1 Star</label>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <center><input type="radio" name="review_star" value="2" <?php if(isset($order->reviews[0]) && $order->reviews[0]->stars == 2) { ?> checked="checked" <?php } ?>/></center>
+                                            <label for="review_star" style="text-align: center">2 Stars</label>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <center><input type="radio" name="review_star" value="3" <?php if(isset($order->reviews[0]) && $order->reviews[0]->stars == 3) { ?> checked="checked" <?php } ?>/></center>
+                                            <label for="review_star" style="text-align: center">3 Stars</label>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <center><input type="radio" name="review_star" value="4" <?php if(isset($order->reviews[0]) && $order->reviews[0]->stars == 4) { ?> checked="checked" <?php } ?> /></center>
+                                            <label for="review_star" style="text-align: center">4 Stars</label>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <center><input type="radio" name="review_star" value="5" <?php if(isset($order->reviews[0]) && $order->reviews[0]->stars == 5) { ?> checked="checked" <?php } ?>/></center>
+                                            <label for="review_star" style="text-align: center">5 Stars</label>
+                                        </div>
+                                    </div>
+                                    <br/>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <?php if(isset($order->reviews[0])) { ?>
+                                                <textarea style="width:100%;" name="review_comment" rows="3" required ><?= $order->reviews[0]->comment ?></textarea>
+                                            <?php } else { ?>
+                                                <textarea style="width:100%;" name="review_comment" rows="3" required ></textarea>
+                                            <?php } ?>
+                                        </div>
+                                    </div>
+                                    <br/>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <?php if($order->status == 5) { ?>
+                                            <?= $this->Form->button(__('Submit Review'), ['class' => 'btn btn-success btn-lg btn-block']) ?>
+                                            <?php } else { ?>
+                                            <?= $this->Form->button(__('Update Review'), ['class' => 'btn btn-success btn-lg btn-block']) ?>
+                                            <?php } ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?= $this->Form->unlockField('review_star') ?>
+                            <?= $this->Form->unlockField('review_comment') ?>
+                            <?= $this->Form->end() ?>
+                            <?php } ?>
+
+                            <?php
+
+                            if($order->status < 2 && $order->status > -1) {
+
+                                $url = '/submit/' . $order->id;
+                            }
+                            else {
+                                $url = '';
+                            }
+                            ?>
+
+                            <?= $this->Form->create('null', ['url' => $url]); ?>
+                            <?php if($order->status < 2 && $order->status > -1) { ?>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <center><span>Enter Your Shipping Details Below</span></center>
                                     <textarea style="width:100%;" rows="4" name="shipping_details"><?php if(isset($order->shipping_details) && $order->shipping_details != '') { ?><?= $order->shipping_details ?><?php } ?></textarea>
                                 </div>
                             </div>
                             <hr/>
+                            <?php } ?>
                             <?php if($balance == 'low') { ?>
                             <div class="row">
                                 <div class="col-md-12">
@@ -161,7 +296,25 @@
                                             <?= $this->Form->button(__('Click Here To Submit Order'), ['class' => 'btn btn-success btn-lg btn-block']) ?>
                                         </div>
                                     </div>
-                                <?php } ?>
+                                <?php } else if($order->status == 2 || $order->status == 3) { ?>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <a href="/dispute/<?= $order->id ?>" class="btn btn-danger btn-lg btn-block">Open Dispute</a>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <a href="/finalize/<?= $order->id ?>" class="btn btn-success btn-lg btn-block">Finalize Early</a>
+                                        </div>
+                                    </div>
+                                    <?php } else if($order->status == 4) { ?>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <a href="/dispute/<?= $order->id ?>" class="btn btn-danger btn-lg btn-block">Open Dispute</a>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <a href="/finalize/<?= $order->id ?>" class="btn btn-success btn-lg btn-block">Finalize Order</a>
+                                            </div>
+                                        </div>
+                                    <?php } ?>
                             <?php } ?>
                             <?= $this->Form->unlockField('shipping_details') ?>
                             <?= $this->Form->end() ?>

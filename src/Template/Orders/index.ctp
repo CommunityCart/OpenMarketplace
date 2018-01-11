@@ -63,6 +63,9 @@
                       case 5:
                         $status = 'Order Finalized';
                         break;
+                      case 6:
+                        $status = 'Order Rated';
+                        break;
                   }
 
                 $totalCost = ($order->product->cost * $order->quantity) + $order->shipping_option->shipping_cost;
@@ -78,6 +81,10 @@
                   <?= $this->Html->link(__('View'), ['action' => 'orderReview2', $order->id], ['class'=>'btn btn-info btn-xs']) ?>
                   <?php } else if($order->status == 1) { ?>
                   <?= $this->Html->link(__('Place Order'), ['controller' => 'Orders', 'action' => 'orderReview2', $order->id], ['class'=>'btn btn-success btn-xs']) ?>
+                  <?php } else if($order->status == 5) { ?>
+                  <?= $this->Html->link(__('Review Order'), ['action' => 'orderReview2', $order->id], ['class'=>'btn btn-xs btn-success']) ?>
+                  <?php } else if($order->status == 6) { ?>
+                  <?= $this->Html->link(__('Update Review'), ['action' => 'orderReview2', $order->id], ['class'=>'btn btn-xs btn-success']) ?>
                   <?php } else { ?>
                   <?= $this->Html->link(__('View'), ['action' => 'orderReview2', $order->id], ['class'=>'btn btn-info btn-xs']) ?>
                   <?php } ?>

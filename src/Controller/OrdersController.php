@@ -19,7 +19,7 @@ class OrdersController extends AppController
         $this->loadModel('ShippingOptions');
         $this->loadModel('Vendors');
 
-        $order = $this->Orders->find('all')->where(['id' => $id, 'user_id' => $this->Auth->user('id')])->first();
+        $order = $this->Orders->find('all', ['contain' => ['Reviews']])->where(['id' => $id, 'user_id' => $this->Auth->user('id')])->first();
 
         if($idIsProduct == true)
         {
@@ -46,7 +46,7 @@ class OrdersController extends AppController
 
         // TODO: Performance, Add Count Columns To Tables instead of counting everytime.
         $vendorOrderCount = $this->Orders->find('all', ['contain' => ['Products']])->where(['Products.vendor_id' => $productsResult->vendor->id, 'Orders.status >' => 1])->count();
-        $productOrderCount = $this->Orders->find('all')->where(['product_id' => $productsResult->id, 'Orders.status >' => 1])->count();
+        $productOrderCount = $this->Orders->find('all')->where(['product_id' => $productsResult->id, 'status >' => 1])->count();
 
         $vendorRating = $this->Vendors->find('all')->where(['id' => $productsResult->vendor->id])->first();
 
@@ -150,6 +150,7 @@ class OrdersController extends AppController
             $totalMissingBalance = $totalMissingBalance + $missingBalance;
 
             $order->set('status', $status);
+            $order->set('created', new \DateTime('now'));
 
             $this->Orders->save($order);
         }
@@ -164,6 +165,22 @@ class OrdersController extends AppController
         $this->set('_serialize', ['orders']);
     }
 
+    public function shipments()
+    {
+        $this->loadModel('Vendors');
+
+        $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
+        $vendor_id = $vendor->get('id');
+
+        $orders = $this->Orders->find('all', ['contain' => ['Users', 'Users.Orders', 'Users.Orders.Products', 'Users.Orders.ShippingOptions', 'Products', 'ShippingOptions']])->where(['Orders.status' => 3, 'Products.vendor_id' => $vendor_id])->all();
+
+        $this->set('title', 'Incoming Orders');
+        $this->set(compact('orders'));
+        $this->set('_serialize', ['orders']);
+
+        $this->render('shipments');
+    }
+
     public function incoming()
     {
         $this->loadModel('Vendors');
@@ -171,9 +188,6 @@ class OrdersController extends AppController
         $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
         $vendor_id = $vendor->get('id');
 
-        $this->paginate = [
-            'contain' => ['Users', 'Products', 'ShippingOptions']
-        ];
         $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where(['Orders.status' => 2, 'Products.vendor_id' => $vendor_id])->all();
 
         $this->set('title', 'Incoming Orders');
@@ -187,15 +201,13 @@ class OrdersController extends AppController
     {
         $order = $this->Orders->get($id);
 
-        if($order->get('user_id') != $this->Auth->user('id')) {
-
-            return $this->redirect($this->referer());
-        }
+        $this->amiuser($order);
 
         $data = $this->request->getData('shipping_details');
 
         $order->set('shipping_details', $data);
         $order->set('status', 2);
+        $order->set('created', new \DateTime('now'));
         $this->Orders->save($order);
 
         return $this->redirect('/orders');
@@ -205,18 +217,10 @@ class OrdersController extends AppController
     {
         $order = $this->Orders->get($id);
 
-        $this->loadModel('Products');
-        $this->loadModel('Vendors');
-
-        $product = $this->Products->get($order->product_id);
-        $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
-
-        if(!isset($vendor) || $vendor->id != $product->vendor_id) {
-
-            return $this->redirect($this->referer());
-        }
+        $this->amirite($order);
 
         $order->set('status', 3);
+        $order->set('accepted', new \DateTime('now'));
         $this->Orders->save($order);
 
         return $this->redirect($this->referer());
@@ -226,6 +230,136 @@ class OrdersController extends AppController
     {
         $order = $this->Orders->get($id);
 
+        $this->amirite($order);
+
+        $order->set('status', -1);
+        $this->Orders->save($order);
+
+        return $this->redirect($this->referer());
+    }
+
+    public function shipped($id = null)
+    {
+        $order = $this->Orders->get($id);
+
+        $this->amirite($order);
+
+        $order->set('status', 4);
+        $order->set('shipped', new \DateTime('now'));
+        $this->Orders->save($order);
+
+        return $this->redirect($this->referer());
+    }
+
+    public function finalize($id = null)
+    {
+        $order = $this->Orders->get($id);
+
+        $this->amiuser($order);
+
+        $order->set('status', 5);
+        $order->set('finalized', new \DateTime('now'));
+        $this->Orders->save($order);
+
+        return $this->redirect($this->referer());
+    }
+
+    public function rate($id = null)
+    {
+        $data = $this->request->getData();
+
+        $order = $this->Orders->get($id);
+
+        $this->amiuser($order);
+
+        $this->loadModel('Reviews');
+
+        $review = $this->Reviews->find('all')->where(['order_id' => $id])->first();
+
+        if(!isset($review))
+        {
+            $new_review = $this->Reviews->newEntity([
+                'order_id' => $id,
+                'comment' => $data['review_comment'],
+                'stars' => $data['review_star'],
+                'created' => new \DateTime('now'),
+                'modified' => new \DateTime('now')
+            ]);
+
+            $this->Reviews->save($new_review);
+        }
+        else {
+
+            $review->set('comment', $data['review_comment']);
+            $review->set('stars', $data['review_star']);
+            $review->set('modified', new \DateTime('now'));
+
+            $this->Reviews->save($review);
+        }
+
+        $order->set('status', 6);
+        $order->set('rated', new \DateTime('now'));
+        $this->Orders->save($order);
+
+        $this->loadModel('Products');
+        $this->loadModel('Vendors');
+
+        $totalStars = 0;
+        $totalReviews = 0;
+
+        // TODO: Add columns to tables so that we dont have to grab every review to recalculate ratings
+
+        $product = $this->Products->find('all')->where(['id' => $order->product_id])->first();
+        $vendor_id = $product->get('vendor_id');
+        $products = $this->Products->find('all')->where(['vendor_id' => $vendor_id])->all();
+
+        foreach($products as $product) {
+
+            $orders = $this->Orders->find('all', ['contain' => ['Reviews']])->where(['product_id' => $product->get('id')])->all();
+
+            $totalProductStars = 0;
+            $totalProductReviews = 0;
+
+            foreach ($orders as $order) {
+
+                if (isset($order->reviews[0])) {
+
+                    $totalProductStars = $totalProductStars + $order->reviews[0]->stars;
+                    $totalProductReviews = $totalProductReviews + 1;
+                }
+            }
+
+            if($totalProductReviews > 0) {
+                $rating = $totalProductStars / $totalProductReviews;
+
+                $product->set('rating', $rating);
+                $this->Products->save($product);
+            }
+
+            $totalStars = $totalStars + $totalProductStars;
+            $totalReviews = $totalReviews + $totalProductReviews;
+        }
+
+        $vendor = $this->Vendors->find('all')->where(['id' => $vendor_id])->first();
+
+        $vendorRating = $totalStars / $totalReviews;
+
+        $vendor->set('rating', $vendorRating);
+        $this->Vendors->save($vendor);
+
+        return $this->redirect($this->referer());
+    }
+
+    private function amiuser($order)
+    {
+        if($order->get('user_id') != $this->Auth->user('id'))
+        {
+            return $this->redirect($this->referer());
+        }
+    }
+
+    private function amirite($order)
+    {
         $this->loadModel('Products');
         $this->loadModel('Vendors');
 
@@ -236,11 +370,6 @@ class OrdersController extends AppController
 
             return $this->redirect($this->referer());
         }
-
-        $order->set('status', -1);
-        $this->Orders->save($order);
-
-        return $this->redirect($this->referer());
     }
 
     public function bulk()
@@ -263,6 +392,7 @@ class OrdersController extends AppController
 
             if($data['submit'] == 'accept') {
                 $order->set('status', 3);
+                $order->set('accepted', new \DateTime('now'));
             }
             else {
                 $order->set('status', -1);

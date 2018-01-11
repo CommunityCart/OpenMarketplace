@@ -107,7 +107,11 @@ Router::connect('/submit/*', ['controller' => 'Orders', 'action' => 'submit']);
 Router::connect('/cancel/*', ['controller' => 'Orders', 'action' => 'delete']);
 Router::connect('/accept/*', ['controller' => 'Orders', 'action' => 'accept']);
 Router::connect('/reject/*', ['controller' => 'Orders', 'action' => 'reject']);
+Router::connect('/shipped/*', ['controller' => 'Orders', 'action' => 'shipped']);
+Router::connect('/finalize/*', ['controller' => 'Orders', 'action' => 'finalize']);
+Router::connect('/rate/*', ['controller' => 'Orders', 'action' => 'rate']);
 Router::connect('/incoming-bulk', ['controller' => 'Orders', 'action' => 'bulk']);
+Router::connect('/pending-shipment', ['controller' => 'Orders', 'action' => 'shipments']);
 
 
 Plugin::routes();

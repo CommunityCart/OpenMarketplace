@@ -65,7 +65,7 @@ $permissions = [
     [
         'role' => ['vendor'],
         'controller' => ['Orders'],
-        'action' => ['incoming', 'accept', 'reject', 'bulk'],
+        'action' => ['incoming', 'accept', 'reject', 'bulk', 'shipments', 'shipped', 'finalize', 'rate'],
         'allowed' => true
     ],
     [
