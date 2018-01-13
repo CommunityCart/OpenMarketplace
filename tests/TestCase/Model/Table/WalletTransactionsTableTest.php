@@ -29,7 +29,6 @@ class WalletTransactionsTableTest extends TestCase
         'app.users',
         'app.social_accounts',
         'app.users_subscriptions',
-        'app.currencies',
         'app.orders',
         'app.products',
         'app.vendors',
@@ -38,12 +37,14 @@ class WalletTransactionsTableTest extends TestCase
         'app.shipping_options',
         'app.product_categories',
         'app.countries',
+        'app.orders',
+        'app.disputes',
+        'app.reviews',
         'app.product_countries',
         'app.product_images',
         'app.products_favorite',
         'app.products_featured',
-        'app.disputes',
-        'app.reviews',
+        'app.currencies',
         'app.user_transactions'
     ];
 

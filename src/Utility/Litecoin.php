@@ -49,7 +49,7 @@ class Litecoin
     {
         try {
 
-        return $this->wallet->getNewAddress('hello');
+        return $this->wallet->getNewAddress($account);
 
         } catch (RPCException $e) {
             echo $e->getTraceAsString();
@@ -75,6 +75,11 @@ class Litecoin
     public function sendFromAccount($account, $address, $amount)
     {
         return $this->wallet->sendFromAccount($account, $address, $amount);
+    }
+
+    public function moveFromAccountToAccount($fromAccount, $toAccount, $amount)
+    {
+        return $this->wallet->move($fromAccount, $toAccount, $amount);
     }
 
     /**

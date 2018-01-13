@@ -78,9 +78,14 @@ class WalletTransactionsTable extends Table
             ->notEmpty('transaction_details');
 
         $validator
-            ->numeric('balance')
-            ->requirePresence('balance', 'create')
-            ->notEmpty('balance');
+            ->scalar('balance')
+            ->maxLength('balance', 255)
+            ->allowEmpty('balance');
+
+        $validator
+            ->scalar('transaction_time')
+            ->maxLength('transaction_time', 255)
+            ->allowEmpty('transaction_time');
 
         return $validator;
     }

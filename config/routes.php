@@ -118,5 +118,6 @@ Router::connect('/pending-shipment', ['controller' => 'Orders', 'action' => 'shi
 Router::connect('/shipped-orders', ['controller' => 'Orders', 'action' => 'shipped_orders']);
 Router::connect('/finalized-orders', ['controller' => 'Orders', 'action' => 'finalized_orders']);
 Router::connect('/disputed-orders', ['controller' => 'Orders', 'action' => 'disputed_orders']);
+Router::connect('/withdrawal', ['controller' => 'Wallets', 'action' => 'withdrawal']);
 
 Plugin::routes();

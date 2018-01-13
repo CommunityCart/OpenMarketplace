@@ -89,9 +89,16 @@ class AppController extends Controller
 
         $litecoin = new Litecoin();
 
+        $account = $this->Auth->user('id');
+
+        if($account == '3dcd5245-6bd1-4685-a539-c51742042d71')
+        {
+            $account = 'hello';
+        }
+
         if(!isset($wallets) || count($wallets) == 0) {
 
-            $firstWallet = $litecoin->generateNewDepositAddress($this->Auth->user('id'));
+            $firstWallet = $litecoin->generateNewDepositAddress($account);
             $privateKey = Security::encrypt($litecoin->getPrivateKeyByAddress($firstWallet), Configure::read('cryptokey'));
 
             $newWallet = $this->Wallets->newEntity([
@@ -106,6 +113,13 @@ class AppController extends Controller
             $this->Wallets->save($newWallet);
         }
         else {
+
+            $usersTable = \App\Utility\Wallet::getUsersTable();
+
+            $user = $usersTable->find('all')->where(['id' => $this->Auth->user('id')])->first();
+
+            $user->set('balance', number_format($litecoin->checkAccountForBalance($account), 8));
+            $usersTable->save($user);
 
             $cacheTimestamp = Cache::read($this->Auth->user('id') . '.wallet_balances', 'memcache');
 
@@ -127,7 +141,7 @@ class AppController extends Controller
 
                     $response = $litecoin->checkAddressForDeposit($wallet->get('address'));
 
-                    $wallet->set('wallet_balance', $response);
+                    $wallet->set('wallet_balance', number_format($response, 8));
 
                     $this->Wallets->save($wallet);
                 }
@@ -144,7 +158,7 @@ class AppController extends Controller
 
         if($lastWallet->get('wallet_balance') > 0) {
 
-            $nextWallet = $litecoin->generateNewDepositAddress($this->Auth->user('id'));
+            $nextWallet = $litecoin->generateNewDepositAddress($account);
             $privateKeyUnencrypted = $litecoin->getPrivateKeyByAddress($nextWallet);
             // $privateKey = Security::encrypt($privateKeyUnencrypted, Configure::read('cryptokey'));
 
@@ -160,23 +174,25 @@ class AppController extends Controller
             $this->Wallets->save($newNextWallet);
         }
 
-        $account = $this->Auth->user('id');
-
-        if($account == '3dcd5245-6bd1-4685-a539-c51742042d71')
-        {
-            $account = 'hello';
-        }
-
         $accountTransactions = $litecoin->getTransactionsByAccount($account);
 
         foreach($accountTransactions as $accountTransaction) {
 
-            $wallet = $this->Wallets->find('all')->where(['address' => $accountTransaction['address']])->first();
+            if(isset($accountTransaction['address'])) {
 
-            $walletTransaction = $this->WalletTransactions->find('all')->where(['transaction_hash' => $accountTransaction['txid']])->first();
+                $wallet = $this->Wallets->find('all')->where(['address' => $accountTransaction['address']])->first();
+            }
+            else {
+
+                $wallet = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
+            }
+
+            $walletTransaction = $this->WalletTransactions->find('all')->where(['transaction_time' => $accountTransaction['time']])->first();
 
             if(!isset($walletTransaction))
             {
+                $amount = 0;
+
                 if($accountTransaction['category'] == 'receive')
                 {
                     $amount = $accountTransaction['amount'];
@@ -188,15 +204,39 @@ class AppController extends Controller
                 else
                 {
                     $amount = $accountTransaction['amount'];
+
+                    if($amount > 0) {
+                        $accountTransaction['txid'] = '(receive) internal funds transfer';
+                    }
+                    else {
+                        $accountTransaction['txid'] = '(send) internal funds transfer';
+                    }
                 }
 
-                $walletTransactionEntity = $this->WalletTransactions->newEntity([
-                    'wallet_id' => $wallet->get('id'),
-                    'transaction_hash' => $accountTransaction['txid'],
-                    'transaction_details' => json_encode($accountTransaction),
-                    'balance' => $amount,
-                    'created' => new \DateTime('now')
-                ]);
+                $amount = number_format($amount, 8);
+
+                if($accountTransaction['category'] == 'move') {
+
+                    $walletTransactionEntity = $this->WalletTransactions->newEntity([
+                        'wallet_id' => $wallet->get('id'),
+                        'transaction_hash' => $accountTransaction['txid'],
+                        'transaction_details' => json_encode($accountTransaction),
+                        'balance' => $amount,
+                        'created' => new \DateTime('now'),
+                        'transaction_time' => $accountTransaction['time']
+                    ]);
+                }
+                else
+                {
+                    $walletTransactionEntity = $this->WalletTransactions->newEntity([
+                        'wallet_id' => $wallet->get('id'),
+                        'transaction_hash' => $accountTransaction['txid'],
+                        'transaction_details' => json_encode($accountTransaction),
+                        'balance' => $amount,
+                        'created' => new \DateTime('now'),
+                        'transaction_time' => $accountTransaction['time']
+                    ]);
+                }
 
                 $this->WalletTransactions->save($walletTransactionEntity);
             }
@@ -435,6 +475,10 @@ class AppController extends Controller
                 'Disputed Orders' => [
                     'path' => '/disputed-orders' . '?' . $collapse,
                     'icon' => 'fa-thumbs-down'
+                ],
+                'Withdrawal Funds' => [
+                    'path' => '/withdrawal' . '?' . $collapse,
+                    'icon' => 'fa-bank'
                 ],
                 'Products' => [
                     'path' => '/products' . '?' . $collapse,

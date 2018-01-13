@@ -61,8 +61,15 @@ class WalletsController extends AppController
             $this->set('missing', $missing);
             $this->set('total', $total);
         }
+
+        $this->set('escrow', \App\Utility\Wallet::getEscrow($this->Auth->user('id')));
         $this->set(compact('wallets', 'currentWallet', 'totalBalance', 'totalUSDBalance'));
         $this->set('_serialize', ['wallets']);
+    }
+
+    public function withdrawal()
+    {
+
     }
 
     /**

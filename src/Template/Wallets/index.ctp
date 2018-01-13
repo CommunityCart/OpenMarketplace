@@ -1,7 +1,7 @@
 <!-- Main content -->
 <section class="content">
   <div class="row">
-    <div class="col-md-offset-3 col-md-6">
+    <div class="col-md-6">
       <div class="box">
         <div class="box-header">
           <div class="box-title" style="text-align: center;">
@@ -10,6 +10,18 @@
         </div>
         <div class="box-body">
           <pre><center>https://www.cashmoney.exchange</center></pre>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="box">
+        <div class="box-header">
+          <div class="box-title">
+            <h3>Your <b>Cash Money Coin</b> Deposit Address</h3>
+          </div>
+        </div>
+        <div class="box-body">
+          <pre>CMCx<?= $currentWallet->address ?></pre>
         </div>
       </div>
     </div>
@@ -61,6 +73,11 @@
               <pre><?= $totalUSDBalance ?> USD</pre>
             </div>
           </div>
+          <div class="row">
+            <div class="col-md-12">
+              <pre>You currently have <?= $escrow ?> being held safely in escrow.</pre>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -68,11 +85,32 @@
       <div class="box">
         <div class="box-header">
           <div class="box-title">
-            <h3>Your <b>Cash Money Coin</b> Deposit Address</h3>
+            <h3>Withdrawal Funds</h3>
           </div>
         </div>
         <div class="box-body">
-            <pre>CMCx<?= $currentWallet->address ?></pre>
+          <?= $this->Form->create(null, ['url' => '/withdrawal']); ?>
+          <div class="row">
+            <div class="col-md-12">
+              <input type="text" style='width:100%' class="form-control" name="withdrawal" placeholder="Your Withdrawal Address Goes Here" required />
+            </div>
+          </div>
+          <br/>
+          <div class="row">
+            <div class="col-md-4">
+              <input type="text" name="withdrawal_amount" class="form-control" placeholder="Withdrawal Amount" required />
+            </div>
+            <div class="col-md-4">
+              <input type="text" name="withdrawal_pin" class="form-control" placeholder="Your Pin Number" required />
+            </div>
+            <div class="col-md-4">
+              <?= $this->Form->button(__('Withdrawal'), ['class' => 'btn btn-success btn-lg btn-block']) ?>
+            </div>
+          </div>
+          <?= $this->Form->unlockField('withdrawal') ?>
+          <?= $this->Form->unlockField('withdrawal_amount') ?>
+          <?= $this->Form->unlockField('withdrawal_pin') ?>
+          <?= $this->Form->end() ?>
         </div>
       </div>
     </div>
@@ -137,7 +175,7 @@
             <?php foreach ($wallet->wallet_transactions as $walletTransaction): ?>
             <tr>
               <td><?= h($walletTransaction->transaction_hash) ?></td>
-              <td><?= $this->Number->format($walletTransaction->balance) ?></td>
+              <td><?= $walletTransaction->balance ?></td>
               <td><?= $walletTransaction->created ?></td>
             </tr>
             <?php endforeach; ?>

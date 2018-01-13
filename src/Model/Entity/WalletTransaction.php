@@ -10,8 +10,9 @@ use Cake\ORM\Entity;
  * @property int $wallet_id
  * @property string $transaction_hash
  * @property string $transaction_details
- * @property float $balance
+ * @property string $balance
  * @property \Cake\I18n\FrozenTime $created
+ * @property string $transaction_time
  *
  * @property \App\Model\Entity\Wallet $wallet
  * @property \App\Model\Entity\Order[] $orders
@@ -35,6 +36,7 @@ class WalletTransaction extends Entity
         'transaction_details' => true,
         'balance' => true,
         'created' => true,
+        'transaction_time' => true,
         'wallet' => true,
         'orders' => true,
         'user_transactions' => true

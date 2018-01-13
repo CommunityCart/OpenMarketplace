@@ -69,6 +69,12 @@ $permissions = [
         'allowed' => true
     ],
     [
+        'role' => ['vendor'],
+        'controller' => ['Wallets'],
+        'action' => ['withdrawal'],
+        'allowed' => true
+    ],
+    [
         'role' => ['user', 'vendor'],
         'controller' => ['Orders'],
         'action' => ['orderReview', 'index', 'orderReview2', 'delete'],

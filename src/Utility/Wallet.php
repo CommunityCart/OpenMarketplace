@@ -20,24 +20,38 @@ class Wallet {
         return $Table;
     }
 
+    public static function getUsersTable()
+    {
+        $Table = TableRegistry::get('users');
+
+        return $Table;
+    }
+
     public static function getWalletBalance($user_id)
     {
-        $walletsTable = self::getWalletTable();
+        $usersTable = self::getUsersTable();
 
-        $wallets = $walletsTable->find('all', ['contain' => ['Users', 'Currencies']])->where(['Wallets.user_id' => $user_id, 'Wallets.currency_id' => '4'])->all();
+        $user = $usersTable->find('all')->where(['id' => $user_id])->first();
 
-        $totalBalance = 0;
+        $totalBalance = $user->get('balance');
 
-        foreach($wallets as $wallet)
-        {
-            $totalBalance = $totalBalance + $wallet->wallet_balance;
-        }
+        $total = self::getEscrow($user_id);
 
+        $totalCryptoBalance = $totalBalance - \App\Utility\Currency::Convert('usd', $total, 'cmc');
+        $totalBalance = \App\Utility\Currency::ConvertToUSD('cmc', $totalBalance);
+
+        $totalBalance = $totalBalance - $total;
+
+        return array($totalBalance, $totalCryptoBalance);
+    }
+
+    public static function getEscrow($user_id)
+    {
         $ordersTable = self::getOrdersTable();
         $productsTable = TableRegistry::get('products');
         $shippingTable = TableRegistry::get('shipping_options');
 
-        $orders = $ordersTable->find('all')->where(['user_id' => $user_id, 'status >' => 1])->all();
+        $orders = $ordersTable->find('all')->where(['user_id' => $user_id, 'status >' => 1, 'paid_vendor' => 0])->all();
 
         $total = 0;
 
@@ -49,11 +63,6 @@ class Wallet {
             $total = $total + (($product->get('cost') * $order->get('quantity')) + $shipping->get('shipping_cost'));
         }
 
-        $totalCryptoBalance = $totalBalance - \App\Utility\Currency::Convert('usd', $total, 'cmc');
-        $totalBalance = \App\Utility\Currency::ConvertToUSD('cmc', $totalBalance);
-
-        $totalBalance = $totalBalance - $total;
-
-        return array($totalBalance, $totalCryptoBalance);
+        return $total;
     }
 }
