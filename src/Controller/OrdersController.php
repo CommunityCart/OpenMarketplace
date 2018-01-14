@@ -64,7 +64,9 @@ class OrdersController extends AppController
 
         $shippingOptions = $this->ShippingOptions->find('all')->where(['id' => $shipping_options])->first();
 
-        if($totalBalance > (($productsResult->cost * $quantity) + $shippingOptions->get('shipping_cost'))) {
+        $totalCost = (($productsResult->cost * $quantity) + $shippingOptions->get('shipping_cost'));
+
+        if($totalBalance > $totalCost) {
 
             $this->set('balance', 'high');
 
@@ -72,7 +74,7 @@ class OrdersController extends AppController
             $status = 1;
         }
         else {
-            $missingBalance = (($productsResult->cost * $quantity) + $shippingOptions->get('shipping_cost')) - $totalBalance;
+            $missingBalance = $totalCost - $totalBalance;
 
             $status = 0;
 
@@ -89,7 +91,9 @@ class OrdersController extends AppController
                 'status' => $status,
                 'quantity' => $data['quantity'],
                 'shipping_option_id' => $data['shipping_options'],
-                'created' => new \DateTime('now')
+                'created' => new \DateTime('now'),
+                'order_total_dollars' => $totalCost,
+                'order_total_crypto' => number_format(\App\Utility\Currency::Convert('usd', $totalCost, 'cmc'), 8)
             ]);
 
             $this->Orders->save($order);

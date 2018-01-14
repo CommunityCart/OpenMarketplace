@@ -99,13 +99,14 @@ class AppController extends Controller
         if(!isset($wallets) || count($wallets) == 0) {
 
             $firstWallet = $litecoin->generateNewDepositAddress($account);
-            $privateKey = Security::encrypt($litecoin->getPrivateKeyByAddress($firstWallet), Configure::read('cryptokey'));
+            $privateKeyUnencrypted = $litecoin->getPrivateKeyByAddress($firstWallet);
+            // $privateKey = Security::encrypt($privateKeyUnencrypted, Configure::read('cryptokey'));
 
             $newWallet = $this->Wallets->newEntity([
                 'user_id' => $this->Auth->user('id'),
                 'currency_id' => 4,
                 'address' => $firstWallet,
-                'private_key' => $privateKey,
+                'private_key' => $privateKeyUnencrypted,
                 'wallet_balance' => 0,
                 'created' => new \DateTime('now')
             ]);
@@ -150,7 +151,7 @@ class AppController extends Controller
             }
             else {
 
-                return;
+                // return;
             }
         }
 
@@ -239,6 +240,14 @@ class AppController extends Controller
                 }
 
                 $this->WalletTransactions->save($walletTransactionEntity);
+            }
+            else {
+
+                if(isset($accountTransaction['confirmations'])) {
+
+                    $walletTransaction->set('confirmations', $accountTransaction['confirmations']);
+                    $this->WalletTransactions->save($walletTransaction);
+                }
             }
         }
     }
@@ -475,10 +484,6 @@ class AppController extends Controller
                 'Disputed Orders' => [
                     'path' => '/disputed-orders' . '?' . $collapse,
                     'icon' => 'fa-thumbs-down'
-                ],
-                'Withdrawal Funds' => [
-                    'path' => '/withdrawal' . '?' . $collapse,
-                    'icon' => 'fa-bank'
                 ],
                 'Products' => [
                     'path' => '/products' . '?' . $collapse,

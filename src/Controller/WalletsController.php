@@ -19,32 +19,34 @@ class WalletsController extends AppController
      */
     public function index()
     {
+        $this->loadModel('Users');
         $this->loadModel('Orders');
+        $this->loadModel('WalletTransactions');
 
+        $user = $this->Users->find('all')->where(['id' => $this->Auth->user('id')])->first();
         $orders = $this->Orders->find('all')->where(['user_id' => $this->Auth->user('id'), 'status' => 0])->all();
 
         if(count($orders) > 0) {
-
-            $this->loadModel('Products');
-            $this->loadModel('ShippingOptions');
 
             $total = 0;
 
             foreach($orders as $order) {
 
-                $product = $this->Products->find('all')->where(['id' => $order->get('product_id')])->first();
-                $shipping = $this->ShippingOptions->find('all')->where(['id' => $order->get('shipping_option_id')])->first();
-
-                $total = $total + (($product->get('cost') * $order->get('quantity')) + $shipping->get('shipping_cost'));
+                $total = $total + $order->get('order_total_dollars');
             }
         }
 
-        $this->paginate = [
-            'contain' => ['Users', 'Currencies', 'WalletTransactions']
-        ];
-
         $currentWallet = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')])->last();
-        $wallets = $this->paginate($this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')]));
+        $wallets = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')]);
+
+        $walletTransactions = $this->WalletTransactions->find('all');
+
+        foreach($wallets as $wallet)
+        {
+            $walletTransactions = $walletTransactions->orWhere(['wallet_id' => $wallet->get('id')]);
+        }
+
+        $walletTransactions = $walletTransactions->orderDesc('transaction_time')->limit(100)->all();
 
         $totalBalanceMinusEscrowFinalized = \App\Utility\Wallet::getWalletBalance($this->Auth->user('id'));
 
@@ -62,7 +64,14 @@ class WalletsController extends AppController
             $this->set('total', $total);
         }
 
-        $this->set('escrow', \App\Utility\Wallet::getEscrow($this->Auth->user('id')));
+        $this->set('walletTransactions', $walletTransactions);
+        $this->set('role', $user->get('role'));
+        if($user->get('role') == 'vendor') {
+            $this->set('orders_escrow', \App\Utility\Wallet::getOrdersEscrowDollars($this->Auth->user('id')));
+            $this->set('orders_escrow_crypto', \App\Utility\Wallet::getOrdersEscrowCrypto($this->Auth->user('id')));
+        }
+        $this->set('escrow', \App\Utility\Wallet::getEscrowDollars($this->Auth->user('id')));
+        $this->set('escrow_crypto', \App\Utility\Wallet::getEscrowCrypto($this->Auth->user('id')));
         $this->set(compact('wallets', 'currentWallet', 'totalBalance', 'totalUSDBalance'));
         $this->set('_serialize', ['wallets']);
     }

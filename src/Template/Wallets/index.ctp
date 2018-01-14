@@ -75,9 +75,16 @@
           </div>
           <div class="row">
             <div class="col-md-12">
-              <pre>You currently have <?= $escrow ?> being held safely in escrow.</pre>
+              <pre>You have <?= $escrow ?> or <?= $escrow_crypto ?> in purchases escrow.</pre>
             </div>
           </div>
+          <?php if($role == 'vendor') { ?>
+          <div class="row">
+            <div class="col-md-12">
+              <pre>You have <?= $orders_escrow ?> or <?= $orders_escrow_crypto ?> in orders escrow.</pre>
+            </div>
+          </div>
+          <?php } ?>
         </div>
       </div>
     </div>
@@ -92,7 +99,7 @@
           <?= $this->Form->create(null, ['url' => '/withdrawal']); ?>
           <div class="row">
             <div class="col-md-12">
-              <input type="text" style='width:100%' class="form-control" name="withdrawal" placeholder="Your Withdrawal Address Goes Here" required />
+              <input type="text" style='width:100%' class="form-control" name="withdrawal" placeholder="Your CashMoneyCoin Withdrawal Address Goes Here" required />
             </div>
           </div>
           <br/>
@@ -158,7 +165,7 @@
     <div class="col-xs-12">
       <div class="box">
         <div class="box-header">
-          <h3 class="box-title"><?= __('List of') ?> Wallet Transactions</h3>
+          <h3 class="box-title"><?= __('List of') ?> The Last 100 Wallet Transactions</h3>
         </div>
         <!-- /.box-header -->
         <div class="box-body table-responsive no-padding">
@@ -167,28 +174,26 @@
             <tr>
               <th><?= $this->Paginator->sort('transaction_hash') ?></th>
               <th><?= $this->Paginator->sort('balance') ?></th>
+              <th><?= $this->Paginator->sort('confirmations') ?></th>
               <th><?= $this->Paginator->sort('created') ?></th>
             </tr>
             </thead>
             <tbody>
-            <?php foreach ($wallets as $wallet) { ?>
-            <?php foreach ($wallet->wallet_transactions as $walletTransaction): ?>
+            <?php $x = 0; ?>
+            <?php foreach ($walletTransactions as $walletTransaction): ?>
+            <?php $x = $x + 1; ?>
+            <?php if($x == 101) { break; } ?>
             <tr>
               <td><?= h($walletTransaction->transaction_hash) ?></td>
               <td><?= $walletTransaction->balance ?></td>
+              <td><?= $walletTransaction->confirmations ?></td>
               <td><?= $walletTransaction->created ?></td>
             </tr>
             <?php endforeach; ?>
-            <?php } ?>
             </tbody>
           </table>
         </div>
         <!-- /.box-body -->
-        <div class="box-footer clearfix">
-          <ul class="pagination pagination-sm no-margin pull-right">
-            <?php echo $this->Paginator->numbers(); ?>
-          </ul>
-        </div>
       </div>
       <!-- /.box -->
     </div>

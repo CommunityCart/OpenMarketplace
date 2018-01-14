@@ -21,7 +21,7 @@ class Currency {
 
         $exchangeResult = $exchangeQuery->first();
 
-        return $amount * $exchangeResult->get('is_equal_to');
+        return number_format($amount * $exchangeResult->get('is_equal_to'), 8);
     }
 
     public static function ConvertToUSD($from_symbol, $amount)
@@ -32,6 +32,6 @@ class Currency {
 
         $exchangeResult = $exchangeQuery->first();
 
-        return $amount * $exchangeResult->get('is_equal_to');
+        return number_format($amount * $exchangeResult->get('is_equal_to'), 3);
     }
 }

@@ -1,22 +1,22 @@
 <?php
 namespace App\Test\TestCase\Model\Table;
 
-use App\Model\Table\OrdersTable;
+use App\Model\Table\InvitesFinalizedTable;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
 
 /**
- * App\Model\Table\OrdersTable Test Case
+ * App\Model\Table\InvitesFinalizedTable Test Case
  */
-class OrdersTableTest extends TestCase
+class InvitesFinalizedTableTest extends TestCase
 {
 
     /**
      * Test subject
      *
-     * @var \App\Model\Table\OrdersTable
+     * @var \App\Model\Table\InvitesFinalizedTable
      */
-    public $Orders;
+    public $InvitesFinalized;
 
     /**
      * Fixtures
@@ -24,6 +24,7 @@ class OrdersTableTest extends TestCase
      * @var array
      */
     public $fixtures = [
+        'app.invites_finalized',
         'app.orders',
         'app.users',
         'app.social_accounts',
@@ -56,8 +57,8 @@ class OrdersTableTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $config = TableRegistry::exists('Orders') ? [] : ['className' => OrdersTable::class];
-        $this->Orders = TableRegistry::get('Orders', $config);
+        $config = TableRegistry::exists('InvitesFinalized') ? [] : ['className' => InvitesFinalizedTable::class];
+        $this->InvitesFinalized = TableRegistry::get('InvitesFinalized', $config);
     }
 
     /**
@@ -67,7 +68,7 @@ class OrdersTableTest extends TestCase
      */
     public function tearDown()
     {
-        unset($this->Orders);
+        unset($this->InvitesFinalized);
 
         parent::tearDown();
     }

@@ -1,22 +1,22 @@
 <?php
 namespace App\Test\TestCase\Model\Table;
 
-use App\Model\Table\OrdersTable;
+use App\Model\Table\InvitesTable;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
 
 /**
- * App\Model\Table\OrdersTable Test Case
+ * App\Model\Table\InvitesTable Test Case
  */
-class OrdersTableTest extends TestCase
+class InvitesTableTest extends TestCase
 {
 
     /**
      * Test subject
      *
-     * @var \App\Model\Table\OrdersTable
+     * @var \App\Model\Table\InvitesTable
      */
-    public $Orders;
+    public $Invites;
 
     /**
      * Fixtures
@@ -24,7 +24,7 @@ class OrdersTableTest extends TestCase
      * @var array
      */
     public $fixtures = [
-        'app.orders',
+        'app.invites',
         'app.users',
         'app.social_accounts',
         'app.users_subscriptions',
@@ -36,16 +36,18 @@ class OrdersTableTest extends TestCase
         'app.shipping_options',
         'app.product_categories',
         'app.countries',
-        'app.product_countries',
-        'app.product_images',
-        'app.products_favorite',
-        'app.products_featured',
+        'app.orders',
         'app.wallet_transactions',
         'app.wallets',
         'app.currencies',
         'app.user_transactions',
         'app.disputes',
-        'app.reviews'
+        'app.reviews',
+        'app.product_countries',
+        'app.product_images',
+        'app.products_favorite',
+        'app.products_featured',
+        'app.invites_claimed'
     ];
 
     /**
@@ -56,8 +58,8 @@ class OrdersTableTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $config = TableRegistry::exists('Orders') ? [] : ['className' => OrdersTable::class];
-        $this->Orders = TableRegistry::get('Orders', $config);
+        $config = TableRegistry::exists('Invites') ? [] : ['className' => InvitesTable::class];
+        $this->Invites = TableRegistry::get('Invites', $config);
     }
 
     /**
@@ -67,7 +69,7 @@ class OrdersTableTest extends TestCase
      */
     public function tearDown()
     {
-        unset($this->Orders);
+        unset($this->Invites);
 
         parent::tearDown();
     }

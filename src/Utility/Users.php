@@ -45,10 +45,10 @@ class Users
         return $userEntity;
     }
 
-    public function getUserByEmail($email)
+    public function getUserByUsername($username)
     {
         $usersTable = $this->getUserTable();
-        $usersQuery = $usersTable->find('all')->where(['users.email' => $email])->limit(1);
+        $usersQuery = $usersTable->find('all')->where(['users.username' => $username])->limit(1);
         $userEntity = $usersQuery->first();
 
         return $userEntity;

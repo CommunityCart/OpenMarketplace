@@ -22,7 +22,7 @@
                 <th></th>
                 <?php } ?>
                 <?php if($title != 'Shopping Cart') { ?>
-                <th>Username</th>
+                    <th>Username</th>
                 <?php } ?>
                 <th><?= $this->Paginator->sort('product_id') ?></th>
                 <th><?= $this->Paginator->sort('quantity') ?></th>

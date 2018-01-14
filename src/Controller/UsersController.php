@@ -9,6 +9,8 @@ use Cake\Core\Configure;
 use Cake\Utility\Security;
 use CakeDC\Users\Controller\Component\UsersAuthComponent;
 use App\Utility\Users;
+use App\Utility\Settings;
+use App\Utility\Invites;
 
 class UsersController extends BaseUsersController
 {
@@ -76,17 +78,63 @@ class UsersController extends BaseUsersController
         $this->render('admin_edit_user');
     }
 
-    public function register() {
+    public function register($code = null) {
 
         $this->set('title', 'Register User');
 
         $data = $this->request->getData('captcha_confirm');
 
+        if($code != null) {
+
+            $this->set('code', $code);
+        }
+        else {
+
+            $this->set('code', '');
+        }
+
         if($this->request->getMethod() == 'POST' && !$this->Captcha->check($data))
         {
             $this->Flash->error('Invalid Captcha, Please Try Again.');
 
-            $this->redirect('/register');
+            if($code != null) {
+
+                return $this->redirect('/youre-invited/' . $code);
+            }
+            else {
+
+                return $this->redirect('/register');
+            }
+        }
+
+        if($this->request->getMethod() == 'POST') {
+            $inviteCode = $this->request->getData('invite_code');
+            $inviteId = Invites::verifyInviteCode($inviteCode);
+
+            if (Settings::registerInviteOnly() == true && $inviteId == false) {
+
+                $this->Flash->error('Invalid Invite Code, Please try Again');
+
+                if($code != null) {
+
+                    return $this->redirect('/youre-invited/' . $code);
+                }
+                else {
+
+                    return $this->redirect('/register');
+                }
+            }
+
+            if ($inviteId != false && $inviteId > 0) {
+
+                $this->eventManager()->on(UsersAuthComponent::EVENT_AFTER_REGISTER, function ($event) use ($inviteId) {
+                    $username = $event->subject->request->data['username'];
+                    $users = new Users();
+                    $user = $users->getUserByUsername($username);
+
+                    Invites::insertRegistration($user, $inviteId);
+                });
+            }
         }
 
         parent::register();

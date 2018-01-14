@@ -57,6 +57,12 @@ $permissions = [
         'allowed' => true
     ],
     [
+        'role' => ['user', 'vendor', 'admin', 'superadmin'],
+        'controller' => ['Invites'],
+        'action' => ['index'],
+        'allowed' => true
+    ],
+    [
         'role' => ['user', 'vendor'],
         'controller' => ['Dashboard', 'Shop'],
         'action' => ['index','favorites'],
@@ -95,7 +101,7 @@ $permissions = [
     [
         'role' => ['user', 'vendor', 'admin', 'superadmin'],
         'controller' => ['Products'],
-        'action' => ['favorite', 'flag'],
+        'action' => ['favorite', 'flag', 'view'],
         'allowed' => true
     ],
     [

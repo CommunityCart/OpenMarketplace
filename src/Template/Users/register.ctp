@@ -48,6 +48,11 @@ use Cake\Core\Configure;
                 'placeholder' => 'Enter Letters From Above Image', 'class' => 'form-control']); ?>
                 <span class="glyphicon glyphicon-log-in form-control-feedback"></span>
             </div>
+            <div class="form-group has-feedback">
+                <?php echo $this->Form->control('invite_code', ['label' => false, 'type' => 'text',
+                'placeholder' => 'Invite Code', 'class' => 'form-control', 'value' => $code]); ?>
+                <span class="glyphicon glyphicon-log-in form-control-feedback"></span>
+            </div>
             <div class="row">
                 <!-- /.col -->
                 <div class="col-xs-4 pull-right">

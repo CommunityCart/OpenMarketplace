@@ -85,6 +85,7 @@ Router::connect('/profile', ['controller' => 'Users', 'action' => 'profile']);
 Router::connect('/login', ['controller' => 'Users', 'action' => 'login']);
 Router::connect('/logout', ['plugin' => 'CakeDC/Users', 'controller' => 'Users', 'action' => 'logout']);
 Router::connect('/register', ['controller' => 'Users', 'action' => 'register']);
+Router::connect('/youre-invited/*', ['controller' => 'Users', 'action' => 'register']);
 Router::connect('/upgrade', ['controller' => 'Users', 'action' => 'upgrade']);
 Router::connect('/reset', ['controller' => 'Users', 'action' => 'requestResetPassword']);
 Router::connect('/captcha', ['controller' => 'Users', 'action' => 'captcha']);
@@ -119,5 +120,6 @@ Router::connect('/shipped-orders', ['controller' => 'Orders', 'action' => 'shipp
 Router::connect('/finalized-orders', ['controller' => 'Orders', 'action' => 'finalized_orders']);
 Router::connect('/disputed-orders', ['controller' => 'Orders', 'action' => 'disputed_orders']);
 Router::connect('/withdrawal', ['controller' => 'Wallets', 'action' => 'withdrawal']);
+Router::connect('/invites', ['controller' => 'Invites', 'action' => 'index']);
 
 Plugin::routes();

@@ -12,7 +12,7 @@ use Cake\Validation\Validator;
  * @property \App\Model\Table\UsersTable|\Cake\ORM\Association\BelongsTo $Users
  * @property \App\Model\Table\ProductsTable|\Cake\ORM\Association\BelongsTo $Products
  * @property \App\Model\Table\WalletTransactionsTable|\Cake\ORM\Association\BelongsTo $WalletTransactions
- * @property |\Cake\ORM\Association\BelongsTo $ShippingOptions
+ * @property \App\Model\Table\ShippingOptionsTable|\Cake\ORM\Association\BelongsTo $ShippingOptions
  * @property \App\Model\Table\DisputesTable|\Cake\ORM\Association\HasMany $Disputes
  * @property \App\Model\Table\ReviewsTable|\Cake\ORM\Association\HasMany $Reviews
  *
@@ -91,6 +91,60 @@ class OrdersTable extends Table
             ->requirePresence('quantity', 'create')
             ->notEmpty('quantity');
 
+        $validator
+            ->scalar('shipping_details')
+            ->allowEmpty('shipping_details');
+
+        $validator
+            ->dateTime('accepted')
+            ->allowEmpty('accepted');
+
+        $validator
+            ->dateTime('shipped')
+            ->allowEmpty('shipped');
+
+        $validator
+            ->dateTime('finalized')
+            ->allowEmpty('finalized');
+
+        $validator
+            ->dateTime('rated')
+            ->allowEmpty('rated');
+
+        $validator
+            ->integer('finalize_early')
+            ->allowEmpty('finalize_early');
+
+        $validator
+            ->integer('paid_vendor')
+            ->allowEmpty('paid_vendor');
+
+        $validator
+            ->integer('paid_commission_vendor')
+            ->allowEmpty('paid_commission_vendor');
+
+        $validator
+            ->integer('paid_commission_user')
+            ->allowEmpty('paid_commission_user');
+
+        $validator
+            ->scalar('paid_commission_admins')
+            ->maxLength('paid_commission_admins', 512)
+            ->allowEmpty('paid_commission_admins');
+
+        $validator
+            ->integer('paid_commission_superadmin')
+            ->allowEmpty('paid_commission_superadmin');
+
+        $validator
+            ->numeric('order_total_dollars')
+            ->allowEmpty('order_total_dollars');
+
+        $validator
+            ->scalar('order_total_crypto')
+            ->maxLength('order_total_crypto', 255)
+            ->allowEmpty('order_total_crypto');
+
         return $validator;
     }
 
@@ -105,6 +159,7 @@ class OrdersTable extends Table
     {
         $rules->add($rules->existsIn(['user_id'], 'Users'));
         $rules->add($rules->existsIn(['product_id'], 'Products'));
+        $rules->add($rules->existsIn(['shipping_option_id'], 'ShippingOptions'));
 
         return $rules;
     }
