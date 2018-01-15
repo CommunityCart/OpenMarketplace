@@ -63,6 +63,12 @@ $permissions = [
         'allowed' => true
     ],
     [
+        'role' => ['user', 'vendor', 'admin', 'superadmin'],
+        'controller' => ['Messages'],
+        'action' => ['index', 'view'],
+        'allowed' => true
+    ],
+    [
         'role' => ['user', 'vendor'],
         'controller' => ['Dashboard', 'Shop'],
         'action' => ['index','favorites'],

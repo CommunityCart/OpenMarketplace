@@ -425,12 +425,44 @@ class OrdersController extends AppController
         $litecoin = new \App\Utility\Litecoin();
 
         //
+        // Super Admin Commission
+        //
+
+        $superAdminsCommission = Math::roundCryptoDown($order->get('order_total_crypto') * Settings::getSuperAdminsCommissionPercent());
+        $superadmin_invite_id = Invites::getSuperAdminInviteID();
+        $superadmin_user_id = Invites::getUserIDByInviteID($superadmin_invite_id);
+
+        $litecoin->moveFromAccountToAccount($order->get('user_id'), $superadmin_user_id, $superAdminsCommission);
+
+        sleep(1);
+
+        $superadmin_invite_finalized = $this->InvitesFinalized->newEntity([
+            'order_id' => $order->get('id'),
+            'commission' => $superAdminsCommission,
+            'finalized' => new \DateTime('now'),
+            'invite_id' => $superadmin_invite_id
+        ]);
+        $this->InvitesFinalized->save($superadmin_invite_finalized);
+
+        $order->set('paid_commission_superadmin', 1);
+
+        //
+        // End Super Admin Commission
+
+        //
         // User Commissions
         //
 
         $userCommission = Math::roundCryptoDown($order->get('order_total_crypto') * Settings::getUserCommissionPercent());
         $user_invite_id = Invites::getUserInviteID($order);
-        $user_inviter_user_id = Invites::getUserIDByInviteID($user_invite_id);
+
+        if($user_invite_id != null)
+        {
+            $user_inviter_user_id = Invites::getUserIDByInviteID($user_invite_id);
+        }
+        else {
+            $user_inviter_user_id = $superadmin_user_id;
+        }
 
         $litecoin->moveFromAccountToAccount($order->get('user_id'), $user_inviter_user_id, $userCommission);
 
@@ -455,7 +487,13 @@ class OrdersController extends AppController
 
         $vendorCommission = Math::roundCryptoDown($order->get('order_total_crypto') * Settings::getVendorCommissionPercent());
         $vendor_invite_id = Invites::getVendorInviteID($order);
-        $vendor_inviter_user_id = Invites::getUserIDByInviteID($vendor_invite_id);
+
+        if($vendor_invite_id != null) {
+            $vendor_inviter_user_id = Invites::getUserIDByInviteID($vendor_invite_id);
+        }
+        else {
+            $vendor_inviter_user_id = $superadmin_user_id;
+        }
 
         $litecoin->moveFromAccountToAccount($order->get('user_id'), $vendor_inviter_user_id, $vendorCommission);
 
@@ -480,6 +518,12 @@ class OrdersController extends AppController
 
         $adminsCommission = Math::roundCryptoDown($order->get('order_total_crypto') * Settings::getAdminsCommissionPercent());
         $adminInviteIDs = Invites::getAdminsInviteIDs();
+
+        if(count($adminInviteIDs) == 0)
+        {
+            $adminInviteIDs[] = $superadmin_invite_id;
+        }
+
         $adminIndividualCommission = Math::roundCryptoDown($adminsCommission / count($adminInviteIDs));
 
         foreach($adminInviteIDs as $adminInviteID)
@@ -503,31 +547,6 @@ class OrdersController extends AppController
 
         //
         // End Admins Commissions
-
-        //
-        // Super Admin Commission
-        //
-
-        $superAdminsCommission = Math::roundCryptoDown($order->get('order_total_crypto') * Settings::getSuperAdminsCommissionPercent());
-        $superadmin_invite_id = Invites::getSuperAdminInviteID();
-        $superadmin_user_id = Invites::getUserIDByInviteID($superadmin_invite_id);
-
-        $litecoin->moveFromAccountToAccount($order->get('user_id'), $superadmin_user_id, $superAdminsCommission);
-
-        sleep(1);
-
-        $superadmin_invite_finalized = $this->InvitesFinalized->newEntity([
-            'order_id' => $order->get('id'),
-            'commission' => $superAdminsCommission,
-            'finalized' => new \DateTime('now'),
-            'invite_id' => $superadmin_invite_id
-        ]);
-        $this->InvitesFinalized->save($superadmin_invite_finalized);
-
-        $order->set('paid_commission_superadmin', 1);
-
-        //
-        // End Super Admin Commission
 
         //
         // Vendor Pay Out

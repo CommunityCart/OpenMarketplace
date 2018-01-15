@@ -17,6 +17,15 @@ class Vendors
         return $vendor;
     }
 
+    public static function getVendorID($user_id)
+    {
+        $vendorsTable = Tables::getVendorsTable();
+
+        $vendor = $vendorsTable->find('all')->where(['user_id' => $user_id])->first();
+
+        return $vendor->get('id');
+    }
+
     public static function getVendorIDByOrder($order)
     {
         $product = Products::getProduct($order->get('product_id'));

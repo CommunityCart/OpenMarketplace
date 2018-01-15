@@ -152,7 +152,7 @@ class AppController extends Controller
             }
             else {
 
-                // return;
+                return;
             }
         }
 
@@ -189,6 +189,8 @@ class AppController extends Controller
                 $wallet = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
             }
 
+            // TODO: Do not query database for 'move' category
+            // TODO: Insert 'move' transactions via the LiteCoin Utility move method
             if($accountTransaction['category'] == 'move'){
 
                 $amount = $accountTransaction['amount'];

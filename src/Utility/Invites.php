@@ -47,7 +47,14 @@ class Invites
         $inviteClaimedTable = Tables::getInvitesClaimedTable();
         $invitee = $inviteClaimedTable->find('all')->where(['user_id' => $userId])->first();
 
-        return $invitee->get('invite_id');
+        if(!isset($invitee))
+        {
+            return null;
+        }
+        else
+        {
+            return $invitee->get('invite_id');
+        }
     }
 
     public static function getUserInviteID($order)
@@ -55,7 +62,14 @@ class Invites
         $inviteClaimedTable = Tables::getInvitesClaimedTable();
         $invitee = $inviteClaimedTable->find('all')->where(['user_id' => $order->get('user_id')])->first();
 
-        return $invitee->get('invite_id');
+        if(!isset($invitee))
+        {
+            return null;
+        }
+        else
+        {
+            return $invitee->get('invite_id');
+        }
     }
 
     // TODO: Upon being made admin, a row must be added to the invites table for that user
@@ -68,10 +82,12 @@ class Invites
         $usersTable = Tables::getUsersTable();
         $admins = $usersTable->find('all')->where(['role' => 'admin'])->all();
 
-        foreach($admins as $admin)
-        {
-            $inviter = $inviteTable->find('all')->where(['user_id' => $admin->get('id')])->first();
-            $adminIDs[] = $inviter->get('id');
+        if(isset($admins)) {
+
+            foreach ($admins as $admin) {
+                $inviter = $inviteTable->find('all')->where(['user_id' => $admin->get('id')])->first();
+                $adminIDs[] = $inviter->get('id');
+            }
         }
 
         return $adminIDs;

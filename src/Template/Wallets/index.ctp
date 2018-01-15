@@ -4,24 +4,24 @@
     <div class="col-md-6">
       <div class="box">
         <div class="box-header">
-          <div class="box-title" style="text-align: center;">
-            <h3 style="width:100%;">Convert Your <b>Bitcoin</b> to <b>Cash Money Coin</b> Here</h3>
-          </div>
-        </div>
-        <div class="box-body">
-          <pre><center>https://www.cashmoney.exchange</center></pre>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-6">
-      <div class="box">
-        <div class="box-header">
           <div class="box-title">
             <h3>Your <b>Cash Money Coin</b> Deposit Address</h3>
           </div>
         </div>
         <div class="box-body">
           <pre>CMCx<?= $currentWallet->address ?></pre>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="box">
+        <div class="box-header">
+          <div class="box-title" style="text-align: center;">
+            <h3 style="width:100%;">Convert Your <b>Bitcoin</b> to <b>Cash Money Coin</b> Here</h3>
+          </div>
+        </div>
+        <div class="box-body">
+          <pre><center>https://www.cashmoney.exchange</center></pre>
         </div>
       </div>
     </div>

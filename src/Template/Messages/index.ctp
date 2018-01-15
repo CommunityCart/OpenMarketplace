@@ -2,66 +2,94 @@
 <section class="content-header">
   <h1>
     Messages
-    <div class="pull-right"><?= $this->Html->link(__('New'), ['action' => 'add'], ['class'=>'btn btn-success btn-xs']) ?></div>
   </h1>
 </section>
 
 <!-- Main content -->
 <section class="content">
   <div class="row">
-    <div class="col-xs-12">
-      <div class="box">
-        <div class="box-header">
-          <h3 class="box-title"><?= __('List of') ?> Messages</h3>
-          <div class="box-tools">
-            <form action="<?php echo $this->Url->build(); ?>" method="POST">
-              <div class="input-group input-group-sm"  style="width: 180px;">
-                <input type="text" name="search" class="form-control" placeholder="<?= __('Fill in to start search') ?>">
-                <span class="input-group-btn">
-                <button class="btn btn-info btn-flat" type="submit"><?= __('Filter') ?></button>
-                </span>
-              </div>
-            </form>
-          </div>
+    <div class="col-md-3">
+      <div class="box box-solid">
+        <div class="box-header with-border">
+          <h3 class="box-title">Folders</h3>
         </div>
-        <!-- /.box-header -->
-        <div class="box-body table-responsive no-padding">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th><?= $this->Paginator->sort('id') ?></th>
-                <th><?= $this->Paginator->sort('user_id') ?></th>
-                <th><?= $this->Paginator->sort('vendor_id') ?></th>
-                <th><?= $this->Paginator->sort('title') ?></th>
-                <th><?= __('Actions') ?></th>
-              </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($messages as $message): ?>
-              <tr>
-                <td><?= $this->Number->format($message->id) ?></td>
-                <td><?= $message->has('user') ? $this->Html->link($message->user->username, ['controller' => 'Users', 'action' => 'view', $message->user->id]) : '' ?></td>
-                <td><?= $message->has('vendor') ? $this->Html->link($message->vendor->title, ['controller' => 'Vendors', 'action' => 'view', $message->vendor->id]) : '' ?></td>
-                <td><?= h($message->title) ?></td>
-                <td class="actions" style="white-space:nowrap">
-                  <?= $this->Html->link(__('View'), ['action' => 'view', $message->id], ['class'=>'btn btn-info btn-xs']) ?>
-                  <?= $this->Html->link(__('Edit'), ['action' => 'edit', $message->id], ['class'=>'btn btn-warning btn-xs']) ?>
-                  <?= $this->Form->postLink(__('Delete'), ['action' => 'delete', $message->id], ['confirm' => __('Confirm to delete this entry?'), 'class'=>'btn btn-danger btn-xs']) ?>
-                </td>
-              </tr>
-            <?php endforeach; ?>
-            </tbody>
-          </table>
-        </div>
-        <!-- /.box-body -->
-        <div class="box-footer clearfix">
-          <ul class="pagination pagination-sm no-margin pull-right">
-            <?php echo $this->Paginator->numbers(); ?>
+        <div class="box-body no-padding">
+          <ul class="nav nav-pills nav-stacked">
+            <li class="<?= $userActive ?>"><a href="/messages?inbox=user"><i class="fa fa-inbox"></i> User Inbox<span class="label label-primary pull-right"><?= $userCount ?></span></a></li>
+            <?php if($role == 'vendor') { ?>
+            <li class="<?= $vendorActive ?>"><a href="/messages?inbox=vendor"><i class="fa fa-envelope-o"></i> Vendor Inbox<span class="label label-primary pull-right"><?= $vendorCount ?></span></a></li>
+            <?php } ?>
           </ul>
         </div>
+        <!-- /.box-body -->
       </div>
-      <!-- /.box -->
     </div>
+    <div class="col-md-9">
+      <div class="box box-primary">
+        <div class="box-header with-border">
+          <h3 class="box-title"><?= $inboxTitle ?></h3>
+          <!-- /.box-tools -->
+        </div>
+        <!-- /.box-header -->
+        <div class="box-body no-padding">
+          <div class="table-responsive mailbox-messages">
+            <?= $this->Form->create(null, ['url' => $url]); ?>
+            <div class="mailbox-controls">
+              <!-- Check all button -->
+              <?php if($checkAll == true) { ?>
+              <?= $this->Form->button('<i class="fa fa-square-o"></i>', ['escape' => false, 'class' => 'btn btn-default btn-sm checkbox-toggle', 'name' => 'submit', 'value' => '']) ?>
+              <?php } else { ?>
+              <?= $this->Form->button('<i class="fa fa-square-o"></i>', ['escape' => false, 'class' => 'btn btn-default btn-sm checkbox-toggle', 'name' => 'submit', 'value' => 'checkAll']) ?>
+              <?php } ?>
+              <div class="btn-group">
+                <?= $this->Form->button('<i class="fa fa-trash-o"></i>', ['escape' => false, 'class' => 'btn btn-default btn-sm', 'name' => 'submit', 'value' => 'deleteChecked']) ?>
+              </div>
+              <!-- /.pull-right -->
+            </div>
+            <table class="table table-hover table-striped table-bordered">
+              <tbody>
+              <?php foreach ($messages as $message): ?>
+              <tr>
+                <td><input type="checkbox" name="checkie[]" value="<?= $message->id ?>" <?php if($checkAll == true) { ?>checked<?php } ?>></td>
+                <?php if($role == 'vendor') { ?>
+                <td class="mailbox-name"><?= $message->user->username ?></td>
+                <?php } else { ?>
+                <td class="mailbox-name"><?= $message->has('vendor') ? $this->Html->link($message->vendor->title, ['controller' => 'Vendors', 'action' => 'view', $message->vendor->id], ['target' => '_blank']) : '' ?></td>
+                <?php } ?>
+                <td class="mailbox-subject" style="width:100%"><?= $this->Html->link(__($message->title), ['action' => 'view', $message->id], ['target' => '_blank']) ?></td>
+                <td class="mailbox-date" style="white-space: nowrap;"><?= $message->created ?></td>
+                <td class="actions" style="white-space:nowrap">
+                  <?= $this->Html->link(__('View'), ['action' => 'view', $message->id], ['class'=>'btn btn-info btn-xs', 'target' => '_blank']) ?>
+                </td>
+              </tr>
+              <?php endforeach; ?>
+              </tbody>
+            </table>
+            <?= $this->Form->unlockField('checkie') ?>
+            <?= $this->Form->end() ?>
+            <!-- /.table -->
+          </div>
+          <!-- /.mail-box-messages -->
+        </div>
+        <!-- /.box-body -->
+        <div class="box-footer no-padding">
+          <div class="mailbox-controls">
+            <div class="paginator">
+              <ul class="pagination">
+                <?= $this->Paginator->first('<< ' . __('first')) ?>
+                <?= $this->Paginator->prev('< ' . __('previous')) ?>
+                <?= $this->Paginator->numbers() ?>
+                <?= $this->Paginator->next(__('next') . ' >') ?>
+                <?= $this->Paginator->last(__('last') . ' >>') ?>
+              </ul>
+              <p><?= $this->Paginator->counter(['format' => __('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')]) ?></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /. box -->
+    </div>
+    <!-- /.col -->
   </div>
 </section>
 <!-- /.content -->
