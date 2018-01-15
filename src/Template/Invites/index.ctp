@@ -203,7 +203,7 @@
             <thead>
             <tr>
               <th>Total Price</th>
-              <th>Your Commission</th>
+              <th>Your Commission in Crypto</th>
               <th>Finalized Date</th>
             </tr>
             </thead>
@@ -211,7 +211,7 @@
             <?php foreach ($invitesFinalized as $invitesFinalize): ?>
             <tr>
               <td>$<?= $invitesFinalize->order->order_total_dollars ?></td>
-              <td>$<?= number_format($invitesFinalize->commission, 5) ?></td>
+              <td><?= number_format($invitesFinalize->commission, 8) ?></td>
               <td><?= $invitesFinalize->finalized ?></td>
             </tr>
             <?php endforeach; ?>

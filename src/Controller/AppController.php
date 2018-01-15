@@ -24,6 +24,7 @@ use Cake\ORM\Table;
 use App\Utility\Litecoin;
 use Cake\Cache\Cache;
 use Cake\Utility\Security;
+use App\Utility\Math;
 
 /**
  * Application Controller
@@ -188,7 +189,23 @@ class AppController extends Controller
                 $wallet = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
             }
 
-            $walletTransaction = $this->WalletTransactions->find('all')->where(['transaction_time' => $accountTransaction['time']])->first();
+            if($accountTransaction['category'] == 'move'){
+
+                $amount = $accountTransaction['amount'];
+
+                if($amount > 0) {
+                    $accountTransaction['txid'] = '(receive) internal funds transfer';
+                }
+                else {
+                    $accountTransaction['txid'] = '(send) internal funds transfer';
+                }
+
+                $walletTransaction = $this->WalletTransactions->find('all')->where(['transaction_hash' => $accountTransaction['txid'], 'transaction_time' => $accountTransaction['time']])->first();
+            }
+            else {
+
+                $walletTransaction = $this->WalletTransactions->find('all')->where(['transaction_hash' => $accountTransaction['txid']])->first();
+            }
 
             if(!isset($walletTransaction))
             {
@@ -243,7 +260,7 @@ class AppController extends Controller
             }
             else {
 
-                if(isset($accountTransaction['confirmations'])) {
+                if(isset($accountTransaction['confirmations']) && $walletTransaction->get('confirmations') < 10) {
 
                     $walletTransaction->set('confirmations', $accountTransaction['confirmations']);
                     $this->WalletTransactions->save($walletTransaction);

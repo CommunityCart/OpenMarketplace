@@ -3,6 +3,7 @@
 namespace App\Utility;
 
 use Cake\ORM\TableRegistry;
+use App\Utility\Currency;
 
 class Wallet {
 
@@ -52,9 +53,9 @@ class Wallet {
         $total = self::getEscrowCrypto($user_id);
 
         $totalCryptoBalance = $totalBalance - $total;
-        $totalBalance = \App\Utility\Currency::ConvertToUSD('cmc', $totalBalance);
+        $totalBalance = Currency::ConvertToUSD('cmc', $totalBalance);
 
-        $totalBalance = $totalBalance - \App\Utility\Currency::ConvertToUSD('cmc', $total);
+        $totalBalance = $totalBalance - Currency::ConvertToUSD('cmc', $total);
 
         return array($totalBalance, $totalCryptoBalance);
     }

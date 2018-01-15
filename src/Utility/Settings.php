@@ -18,14 +18,34 @@ class Settings
         return 1;
     }
 
+    public static function getAdminsCommission()
+    {
+        return 1;
+    }
+
+    public static function getSuperAdminsCommission()
+    {
+        return 1;
+    }
+
     public static function getVendorCommissionPercent()
     {
-        return 0.01;
+        return self::getVendorCommission() / 100;
     }
 
     public static function getUserCommissionPercent()
     {
-        return 0.01;
+        return self::getUserCommission() / 100;
+    }
+
+    public static function getAdminsCommissionPercent()
+    {
+        return self::getAdminsCommission() / 100;
+    }
+
+    public static function getSuperAdminsCommissionPercent()
+    {
+        return self::getSuperAdminsCommission() / 100;
     }
 
     public static function getInviteMax()

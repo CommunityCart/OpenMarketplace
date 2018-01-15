@@ -40,6 +40,11 @@ class Litecoin
         }
     }
 
+    public function getAllAccounts()
+    {
+        return $this->wallet->getAccounts();
+    }
+
     public function getBalances()
     {
         return $this->wallet->getBalances();

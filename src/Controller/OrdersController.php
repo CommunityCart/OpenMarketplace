@@ -2,6 +2,14 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\Utility\Janitor;
+use App\Utility\Settings;
+use App\Utility\Wallet;
+use App\Utility\Currency;
+use App\Utility\Math;
+use App\Utility\Invites;
+use App\Utility\Vendors;
+use Cake\Cache\Cache;
 
 /**
  * Orders Controller
@@ -10,6 +18,9 @@ use App\Controller\AppController;
  *
  * @method \App\Model\Entity\Order[] paginate($object = null, array $settings = [])
  */
+
+// TODO: Place "TODO: Hack Checks" At The Top Of Every File.
+// TODO: Hack Checks
 class OrdersController extends AppController
 {
     public function orderReviewer($id = null, $idIsProduct = false)
@@ -31,7 +42,7 @@ class OrdersController extends AppController
             $data = $order;
         }
 
-        $balances = \App\Utility\Wallet::getWalletBalance($this->Auth->user('id'));
+        $balances = Wallet::getWalletBalance($this->Auth->user('id'));
         $totalBalance = $balances[0];
 
         if($idIsProduct == true) {
@@ -93,7 +104,7 @@ class OrdersController extends AppController
                 'shipping_option_id' => $data['shipping_options'],
                 'created' => new \DateTime('now'),
                 'order_total_dollars' => $totalCost,
-                'order_total_crypto' => number_format(\App\Utility\Currency::Convert('usd', $totalCost, 'cmc'), 8)
+                'order_total_crypto' => number_format(Currency::Convert('usd', $totalCost, 'cmc'), 8)
             ]);
 
             $this->Orders->save($order);
@@ -142,7 +153,7 @@ class OrdersController extends AppController
         $this->loadModel('Vendors');
 
         $totalMissingBalance = 0;
-        $totalBalance = \App\Utility\Wallet::getWalletBalance($this->Auth->user('id'));
+        $totalBalance = Wallet::getWalletBalance($this->Auth->user('id'));
 
         $orders = $this->Orders->find('all')->where(['Orders.user_id' => $this->Auth->user('id'), 'Orders.status <' => 2, 'Orders.status >' => -1])->all();
 
@@ -197,62 +208,34 @@ class OrdersController extends AppController
 
     public function incoming()
     {
-        $this->loadModel('Vendors');
-
-        $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
-        $vendor_id = $vendor->get('id');
-
-        $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where(['Orders.status' => 2, 'Products.vendor_id' => $vendor_id])->all();
-
-        $this->set('title', 'Incoming Orders');
-        $this->set(compact('orders'));
-        $this->set('_serialize', ['orders']);
-
-        $this->render('index');
+        $this->viewOrders('Orders.status',2, 'Incoming Orders');
     }
 
     public function shippedOrders()
     {
-        $this->loadModel('Vendors');
-
-        $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
-        $vendor_id = $vendor->get('id');
-
-        $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where(['Orders.status' => 4, 'Products.vendor_id' => $vendor_id])->all();
-
-        $this->set('title', 'Shipped Orders');
-        $this->set(compact('orders'));
-        $this->set('_serialize', ['orders']);
-
-        $this->render('index');
+        $this->viewOrders('Orders.status',4, 'Shipped Orders');
     }
 
     public function finalizedOrders()
     {
-        $this->loadModel('Vendors');
-
-        $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
-        $vendor_id = $vendor->get('id');
-
-        $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where(['Orders.status >' => 4, 'Products.vendor_id' => $vendor_id])->all();
-
-        $this->set('title', 'Finalized Orders');
-        $this->set(compact('orders'));
-        $this->set('_serialize', ['orders']);
-
-        $this->render('index');
+        $this->viewOrders('Orders.status >', 4, 'Finalized Orders');
     }
 
     public function disputedOrders()
+    {
+        $this->viewOrders('Orders.status', -2, 'Disputed Orders');
+    }
+
+    private function viewOrders($ordersStatus, $status, $title)
     {
         $this->loadModel('Vendors');
 
         $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
         $vendor_id = $vendor->get('id');
 
-        $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where(['Orders.status' => -2, 'Products.vendor_id' => $vendor_id])->all();
+        $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where([$ordersStatus => $status, 'Products.vendor_id' => $vendor_id])->all();
 
-        $this->set('title', 'Disputed Orders');
+        $this->set('title', $title);
         $this->set(compact('orders'));
         $this->set('_serialize', ['orders']);
 
@@ -389,9 +372,7 @@ class OrdersController extends AppController
 
         if($order->get('finalize_early') == 1) {
 
-            $order->set('status', 5);
-            $order->set('finalized', new \DateTime('now'));
-            $this->Orders->save($order);
+            $this->finalizeOrder($order);
         }
 
         return $this->redirect($this->referer());
@@ -404,16 +385,172 @@ class OrdersController extends AppController
         $this->amiuser($order);
 
         if($order->get('status') == 2 || $order->get('status') == 3) {
+
             $order->set('finalize_early', 1);
             $this->Orders->save($order);
+
+            $this->Flash->success('Your Order Has Been Set To Finalize Early.');
+        }
+        else if($order->get('status') == 4) {
+
+            $this->finalizeOrder($order);
         }
         else {
-            $order->set('status', 5);
-            $order->set('finalized', new \DateTime('now'));
-            $this->Orders->save($order);
+
+            $this->Flash->error('Unable To Finalize At This Time.');
         }
 
         return $this->redirect($this->referer());
+    }
+
+    private function finalizeOrder($order)
+    {
+        $cacheTimestamp = Cache::read($order->get('id') . '.finalized', 'memcache');
+
+        if($cacheTimestamp != null || $cacheTimestamp != '') {
+
+            $this->Flash->error('Nice try...');
+
+            return $this->redirect($this->referer());
+        }
+
+        Cache::write($order->get('id') . '.finalized', new \DateTime('now'), 'memcache');
+
+        $order->set('status', 5);
+        $order->set('finalized', new \DateTime('now'));
+        $this->Orders->save($order);
+
+        $this->loadModel('InvitesFinalized');
+
+        $litecoin = new \App\Utility\Litecoin();
+
+        //
+        // User Commissions
+        //
+
+        $userCommission = Math::roundCryptoDown($order->get('order_total_crypto') * Settings::getUserCommissionPercent());
+        $user_invite_id = Invites::getUserInviteID($order);
+        $user_inviter_user_id = Invites::getUserIDByInviteID($user_invite_id);
+
+        $litecoin->moveFromAccountToAccount($order->get('user_id'), $user_inviter_user_id, $userCommission);
+
+        sleep(1);
+
+        $user_invite_finalized = $this->InvitesFinalized->newEntity([
+            'order_id' => $order->get('id'),
+            'commission' => $userCommission,
+            'finalized' => new \DateTime('now'),
+            'invite_id' => $user_invite_id
+        ]);
+        $this->InvitesFinalized->save($user_invite_finalized);
+
+        $order->set('paid_commission_user', 1);
+
+        //
+        // End User Commissions
+
+        //
+        // Vendor Commissions
+        //
+
+        $vendorCommission = Math::roundCryptoDown($order->get('order_total_crypto') * Settings::getVendorCommissionPercent());
+        $vendor_invite_id = Invites::getVendorInviteID($order);
+        $vendor_inviter_user_id = Invites::getUserIDByInviteID($vendor_invite_id);
+
+        $litecoin->moveFromAccountToAccount($order->get('user_id'), $vendor_inviter_user_id, $vendorCommission);
+
+        sleep(1);
+
+        $vendor_invite_finalized = $this->InvitesFinalized->newEntity([
+            'order_id' => $order->get('id'),
+            'commission' => $vendorCommission,
+            'finalized' => new \DateTime('now'),
+            'invite_id' => $vendor_invite_id
+        ]);
+        $this->InvitesFinalized->save($vendor_invite_finalized);
+
+        $order->set('paid_commission_vendor', 1);
+
+        //
+        // End Vendor Commissions
+
+        //
+        // Admins Commissions
+        //
+
+        $adminsCommission = Math::roundCryptoDown($order->get('order_total_crypto') * Settings::getAdminsCommissionPercent());
+        $adminInviteIDs = Invites::getAdminsInviteIDs();
+        $adminIndividualCommission = Math::roundCryptoDown($adminsCommission / count($adminInviteIDs));
+
+        foreach($adminInviteIDs as $adminInviteID)
+        {
+            $admin_user_id = Invites::getUserIDByInviteID($adminInviteID);
+
+            $litecoin->moveFromAccountToAccount($order->get('user_id'), $admin_user_id, $adminIndividualCommission);
+
+            sleep(1);
+
+            $admin_invite_finalized = $this->InvitesFinalized->newEntity([
+                'order_id' => $order->get('id'),
+                'commission' => $adminIndividualCommission,
+                'finalized' => new \DateTime('now'),
+                'invite_id' => $adminInviteID
+            ]);
+            $this->InvitesFinalized->save($admin_invite_finalized);
+        }
+
+        $order->set('paid_commission_admins', 1);
+
+        //
+        // End Admins Commissions
+
+        //
+        // Super Admin Commission
+        //
+
+        $superAdminsCommission = Math::roundCryptoDown($order->get('order_total_crypto') * Settings::getSuperAdminsCommissionPercent());
+        $superadmin_invite_id = Invites::getSuperAdminInviteID();
+        $superadmin_user_id = Invites::getUserIDByInviteID($superadmin_invite_id);
+
+        $litecoin->moveFromAccountToAccount($order->get('user_id'), $superadmin_user_id, $superAdminsCommission);
+
+        sleep(1);
+
+        $superadmin_invite_finalized = $this->InvitesFinalized->newEntity([
+            'order_id' => $order->get('id'),
+            'commission' => $superAdminsCommission,
+            'finalized' => new \DateTime('now'),
+            'invite_id' => $superadmin_invite_id
+        ]);
+        $this->InvitesFinalized->save($superadmin_invite_finalized);
+
+        $order->set('paid_commission_superadmin', 1);
+
+        //
+        // End Super Admin Commission
+
+        //
+        // Vendor Pay Out
+        //
+        $totalCommissions = Math::roundCryptoDown($userCommission + $vendorCommission + $adminsCommission + $superAdminsCommission);
+
+        $totalVendorCryptoToPayout = number_format(Math::roundDown($order->get('order_total_crypto') - $totalCommissions), 8);
+
+        $vendor_user_id = Vendors::getVendorUserIDByOrder($order);
+
+        $litecoin->moveFromAccountToAccount($order->get('user_id'), $vendor_user_id, $totalVendorCryptoToPayout);
+
+        $order->set('paid_vendor', 1);
+        $order->set('order_total_crypto_paid', $totalVendorCryptoToPayout);
+
+        //
+        // End Vendor Payout
+
+        $this->Orders->save($order);
+
+        $this->Flash->success('Your Order Has Been Finalized.');
+
+        $this->redirect($this->referer());
     }
 
     public function unfinalize($id = null)
@@ -425,6 +562,12 @@ class OrdersController extends AppController
         if($order->get('status') == 2 || $order->get('status') == 3) {
             $order->set('finalize_early', 0);
             $this->Orders->save($order);
+
+            $this->Flash->success('Your Order Will Not Finalize Early.');
+        }
+        else {
+
+            $this->Flash->error('Unable To Remove Finalize Early.');
         }
 
         return $this->redirect($this->referer());
@@ -500,7 +643,7 @@ class OrdersController extends AppController
     {
         if($order->get('user_id') != $this->Auth->user('id'))
         {
-            return $this->redirect($this->referer());
+            Janitor::hackAttempt();;
         }
     }
 
@@ -514,7 +657,7 @@ class OrdersController extends AppController
 
         if(!isset($vendor) || $vendor->id != $product->vendor_id) {
 
-            return $this->redirect($this->referer());
+            Janitor::hackAttempt();
         }
     }
 
@@ -528,6 +671,9 @@ class OrdersController extends AppController
         foreach($data['bulk'] as $id)
         {
             $order = $this->Orders->get($id);
+
+            $this->amirite($order);
+
             $product = $this->Products->get($order->product_id);
             $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
 
@@ -560,6 +706,8 @@ class OrdersController extends AppController
     public function delete($id = null)
     {
         $order = $this->Orders->get($id);
+
+        $this->amiuser($order);
 
         if($order->get('user_id') != $this->Auth->user('id')) {
 

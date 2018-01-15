@@ -53,7 +53,7 @@ $permissions = [
     [
         'role' => ['user', 'vendor'],
         'controller' => ['Orders'],
-        'action' => ['submit', 'dispute', 'openDispute'],
+        'action' => ['submit', 'dispute', 'openDispute', 'finalize', 'unfinalize'],
         'allowed' => true
     ],
     [
