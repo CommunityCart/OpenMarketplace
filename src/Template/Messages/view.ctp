@@ -8,116 +8,98 @@
     </li>
   </ol>
 </section>
-
-<!-- Main content -->
 <section class="content">
-<div class="row">
-    <div class="col-md-12">
-        <div class="box box-solid">
-            <div class="box-header with-border">
-                <i class="fa fa-info"></i>
-                <h3 class="box-title"><?php echo __('Information'); ?></h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-                <dl class="dl-horizontal">
-                                                                                                        <dt><?= __('User') ?></dt>
-                                <dd>
-                                    <?= $message->has('user') ? $message->user->username : '' ?>
-                                </dd>
-                                                                                                                <dt><?= __('Vendor') ?></dt>
-                                <dd>
-                                    <?= $message->has('vendor') ? $message->vendor->title : '' ?>
-                                </dd>
-                                                                                                                        <dt><?= __('Title') ?></dt>
-                                        <dd>
-                                            <?= h($message->title) ?>
-                                        </dd>
-                                                                                                                                    
-                                            
-                                                                                                                                            
-                                                                                                                                            
-                                            
-                                    </dl>
-            </div>
-            <!-- /.box-body -->
-        </div>
-        <!-- /.box -->
-    </div>
-    <!-- ./col -->
-</div>
-<!-- div -->
 
     <div class="row">
-        <div class="col-xs-12">
-            <div class="box">
-                <div class="box-header">
-                    <i class="fa fa-share-alt"></i>
-                    <h3 class="box-title"><?= __('Related {0}', ['Message Messages']) ?></h3>
+        <div class="col-md-3">
+            <div class="box box-solid">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Folders</h3>
                 </div>
-                <!-- /.box-header -->
-                <div class="box-body table-responsive no-padding">
-
-                <?php if (!empty($message->message_messages)): ?>
-
-                    <table class="table table-hover">
-                        <tbody>
-                            <tr>
-                                                                    
-                                    <th>
-                                    Id
-                                    </th>
-                                        
-                                                                    
-                                    <th>
-                                    Message Id
-                                    </th>
-                                        
-                                                                    
-                                    <th>
-                                    Body
-                                    </th>
-                                        
-                                                                                                        
-                                <th>
-                                    <?php echo __('Actions'); ?>
-                                </th>
-                            </tr>
-
-                            <?php foreach ($message->message_messages as $messageMessages): ?>
-                                <tr>
-                                                                        
-                                    <td>
-                                    <?= h($messageMessages->id) ?>
-                                    </td>
-                                                                        
-                                    <td>
-                                    <?= h($messageMessages->message_id) ?>
-                                    </td>
-                                                                        
-                                    <td>
-                                    <?= h($messageMessages->body) ?>
-                                    </td>
-                                                                        
-                                                                        <td class="actions">
-                                    <?= $this->Html->link(__('View'), ['controller' => 'MessageMessages', 'action' => 'view', $messageMessages->id], ['class'=>'btn btn-info btn-xs']) ?>
-
-                                    <?= $this->Html->link(__('Edit'), ['controller' => 'MessageMessages', 'action' => 'edit', $messageMessages->id], ['class'=>'btn btn-warning btn-xs']) ?>
-
-                                    <?= $this->Form->postLink(__('Delete'), ['controller' => 'MessageMessages', 'action' => 'delete', $messageMessages->id], ['confirm' => __('Are you sure you want to delete # {0}?', $messageMessages->id), 'class'=>'btn btn-danger btn-xs']) ?>    
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                                    
-                        </tbody>
-                    </table>
-
-                <?php endif; ?>
-
+                <div class="box-body no-padding">
+                    <ul class="nav nav-pills nav-stacked">
+                        <li class="<?= $userActive ?>"><a href="/messages?inbox=user"><i class="fa fa-inbox"></i> User Inbox<span class="label label-primary pull-right"><?= $userCount ?></span></a></li>
+                        <?php if($role == 'vendor') { ?>
+                        <li class="<?= $vendorActive ?>"><a href="/messages?inbox=vendor"><i class="fa fa-envelope-o"></i> Vendor Inbox<span class="label label-primary pull-right"><?= $vendorCount ?></span></a></li>
+                        <?php } ?>
+                    </ul>
                 </div>
                 <!-- /.box-body -->
             </div>
-            <!-- /.box -->
+        </div>
+        <div class="col-md-9">
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <h3><?= h($message->title) ?></h3>
+                        </div>
+                        <!-- /.box-header -->
+                        <div class="box-body no-padding">
+                            <?php foreach($message->message_messages as $message_message) { ?>
+                            <div class="mailbox-read-info">
+                                <?php if($message_message->from_user == 1) { ?>
+                                <h5>From: <?= $message->user->username ?>
+                                    <span class="mailbox-read-time pull-right"><?= $message_message->created ?></span></h5>
+                                <?php } else { ?>
+                                <h5>From: <?= $message->vendor->title ?>
+                                    <span class="mailbox-read-time pull-right"><?= $message_message->created ?></span></h5>
+                                <?php } ?>
+                            </div>
+                            <!-- /.mailbox-controls -->
+                            <div class="mailbox-read-message">
+                                <p><?= $message_message->body ?></p>
+                            </div>
+
+                            <?php } ?>
+                            <!-- /.mailbox-read-message -->
+                        </div>
+                    </div>
+                    <!-- /. box -->
+                </div>
+            </div>
+            <br/>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <h4>Reply</h4>
+                        </div>
+                        <?= $this->Form->create(null, ['url' => '/message-send']); ?>
+                        <div class="box-body">
+                            <textarea style="width:100%" rows="10" name="reply_field" required></textarea>
+                        </div>
+                        <div class="box-footer">
+                            <div class="pull-right">
+                                <?= $this->Form->button('<i class="fa fa-envelope-o"></i> Send', ['escape' => false, 'class' => 'btn btn-primary']) ?>
+                            </div>
+                            <input type="checkbox" name="reply_encrypt" id="reply_encrypt" /> <label for="reply_encrypt">Encrypt Message on Server</label>
+                        </div>
+                        <?= $this->Form->unlockField('reply_field') ?>
+                        <?= $this->Form->end() ?>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <br/>
+    <div class="row">
+        <div class="col-md-offset-3 col-md-9">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <?php if($username == $message->user->username) { ?>
+                    <h4><?= $message->vendor->title ?> PGP Key</h4>
+                    <?php } else { ?>
+                    <h4><?= $message->user->username ?> PGP Key</h4>
+                    <?php } ?>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <textarea style="width:100%" rows="15"><?php if($username == $message->user->username) { echo $vendor_pgp; } else { echo $message->user->pgp; } ?></textarea>
+                </div>
+            </div>
         </div>
     </div>
 </section>

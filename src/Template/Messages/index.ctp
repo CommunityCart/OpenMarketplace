@@ -35,12 +35,7 @@
           <div class="table-responsive mailbox-messages">
             <?= $this->Form->create(null, ['url' => $url]); ?>
             <div class="mailbox-controls">
-              <!-- Check all button -->
-              <?php if($checkAll == true) { ?>
-              <?= $this->Form->button('<i class="fa fa-square-o"></i>', ['escape' => false, 'class' => 'btn btn-default btn-sm checkbox-toggle', 'name' => 'submit', 'value' => '']) ?>
-              <?php } else { ?>
               <?= $this->Form->button('<i class="fa fa-square-o"></i>', ['escape' => false, 'class' => 'btn btn-default btn-sm checkbox-toggle', 'name' => 'submit', 'value' => 'checkAll']) ?>
-              <?php } ?>
               <div class="btn-group">
                 <?= $this->Form->button('<i class="fa fa-trash-o"></i>', ['escape' => false, 'class' => 'btn btn-default btn-sm', 'name' => 'submit', 'value' => 'deleteChecked']) ?>
               </div>

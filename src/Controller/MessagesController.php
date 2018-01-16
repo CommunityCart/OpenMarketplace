@@ -107,31 +107,30 @@ class MessagesController extends AppController
      */
     public function view($id = null)
     {
-        $message = $this->Messages->get($id, [
-            'contain' => ['Users', 'Vendors']
-        ]);
+        if($this->Auth->user('role') == 'vendor') {
 
-        $this->set('message', $message);
-        $this->set('_serialize', ['message']);
-    }
-
-    /**
-     * Delete method
-     *
-     * @param string|null $id Message id.
-     * @return \Cake\Http\Response|null Redirects to index.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function delete($id = null)
-    {
-        $this->request->allowMethod(['post', 'delete']);
-        $message = $this->Messages->get($id);
-        if ($this->Messages->delete($message)) {
-            $this->Flash->success(__('The message has been deleted.'));
-        } else {
-            $this->Flash->error(__('The message could not be deleted. Please, try again.'));
+            $vendor_id = Vendors::getVendorID($this->Auth->user('id'));
+        }
+        else {
+            $vendor_id = 0;
         }
 
-        return $this->redirect(['action' => 'index']);
+        $message = $this->Messages->find('all', ['contain' => ['Users', 'Vendors', 'MessageMessages']])->where(['Messages.id' => $id, 'Messages.vendor_id' => $vendor_id])->orWhere(['Messages.id' => $id, 'Messages.user_id' => $this->Auth->user('id')])->first();
+
+        if($message->get('user_id') == $this->Auth->user('id')) {
+
+            $message->set('user_read', 1);
+        }
+        else if($message->get('vendor_id') == $vendor_id) {
+
+            $message->set('vendor_read', 1);
+        }
+
+        $this->Messages->save($message);
+
+        $this->set('username', $this->Auth->user('username'));
+        $this->set('vendor_pgp', Vendors::getVendorPGP($vendor_id));
+        $this->set('message', $message);
+        $this->set('_serialize', ['message']);
     }
 }

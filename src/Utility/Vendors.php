@@ -4,6 +4,7 @@ namespace App\Utility;
 
 use App\Utility\Tables;
 use App\Utility\Products;
+use App\Utility\Users;
 
 class Vendors
 {
@@ -15,6 +16,23 @@ class Vendors
         $vendor = $vendorsTable->find('all')->where(['id' => $vendor_id])->first();
 
         return $vendor;
+    }
+
+    public static function getVendorPGP($vendor_id)
+    {
+        $user_id = self::getVendorUserIDByVendorID($vendor_id);
+
+        $users = new Users();
+        $user = $users->getUserById($user_id);
+
+        if(isset($user)) {
+
+            return $user->get('pgp');
+        }
+        else {
+
+            return null;
+        }
     }
 
     public static function getVendorID($user_id)
