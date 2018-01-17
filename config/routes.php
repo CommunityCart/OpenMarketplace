@@ -119,7 +119,16 @@ Router::connect('/pending-shipment', ['controller' => 'Orders', 'action' => 'shi
 Router::connect('/shipped-orders', ['controller' => 'Orders', 'action' => 'shipped_orders']);
 Router::connect('/finalized-orders', ['controller' => 'Orders', 'action' => 'finalized_orders']);
 Router::connect('/disputed-orders', ['controller' => 'Orders', 'action' => 'disputed_orders']);
+Router::connect('/disputes', ['controller' => 'Orders', 'action' => 'disputes']);
 Router::connect('/withdrawal', ['controller' => 'Wallets', 'action' => 'withdrawal']);
 Router::connect('/invites', ['controller' => 'Invites', 'action' => 'index']);
+Router::connect('/message-reply/*', ['controller' => 'Messages', 'action' => 'sendReply']);
+Router::connect('/settings', ['controller' => 'Settings', 'action' => 'index']);
+Router::connect('/saveUserSettings', ['controller' => 'Settings', 'action' => 'saveUserSettings']);
+Router::connect('/saveVendorSettings', ['controller' => 'Settings', 'action' => 'saveVendorSettings']);
+Router::connect('/enable2fa', ['controller' => 'Settings', 'action' => 'enable2fa']);
+Router::connect('/save2fa', ['controller' => 'Settings', 'action' => 'save2fa']);
+Router::connect('/display2fa', ['controller' => 'Settings', 'action' => 'display2fa']);
+Router::connect('/login2fa', ['controller' => 'Settings', 'action' => 'login2fa']);
 
 Plugin::routes();

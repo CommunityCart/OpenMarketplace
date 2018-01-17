@@ -53,7 +53,13 @@ $permissions = [
     [
         'role' => ['user', 'vendor'],
         'controller' => ['Orders'],
-        'action' => ['submit', 'dispute', 'openDispute', 'finalize', 'unfinalize'],
+        'action' => ['submit', 'dispute', 'openDispute', 'finalize', 'unfinalize', 'disputes'],
+        'allowed' => true
+    ],
+    [
+        'role' => ['user', 'vendor', 'admin', 'superadmin'],
+        'controller' => ['Settings'],
+        'action' => ['index', 'saveUserSettings', 'enable2fa', 'save2fa', 'display2fa', 'login2fa', 'saveVendorSettings'],
         'allowed' => true
     ],
     [
@@ -65,7 +71,7 @@ $permissions = [
     [
         'role' => ['user', 'vendor', 'admin', 'superadmin'],
         'controller' => ['Messages'],
-        'action' => ['index', 'view'],
+        'action' => ['index', 'view', 'sendReply'],
         'allowed' => true
     ],
     [

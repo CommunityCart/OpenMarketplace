@@ -48,4 +48,11 @@ class Tables
 
         return $Table;
     }
+
+    public static function getMessagesTable()
+    {
+        $Table = TableRegistry::get('messages');
+
+        return $Table;
+    }
 }

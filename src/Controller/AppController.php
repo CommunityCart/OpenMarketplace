@@ -448,9 +448,9 @@ class AppController extends Controller
                     'path' => '/messages' . '?' . $collapse,
                     'icon' => 'fa-envelope-o'
                 ],
-                'Notifications' => [
-                    'path' => '/notifications' . '?' . $collapse,
-                    'icon' => 'fa-bell-o'
+                'Disputes' => [
+                    'path' => '/disputes' . '?' . $collapse,
+                    'icon' => 'fa-thumbs-down'
                 ],
                 'Invites' => [
                     'path' => '/invites' . '?' . $collapse,

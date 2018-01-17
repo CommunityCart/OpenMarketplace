@@ -221,19 +221,31 @@ class OrdersController extends AppController
         $this->viewOrders('Orders.status >', 4, 'Finalized Orders');
     }
 
+    public function disputes()
+    {
+        $this->viewOrders('Orders.status', -2, 'Disputed Orders', false);
+    }
+
     public function disputedOrders()
     {
         $this->viewOrders('Orders.status', -2, 'Disputed Orders');
     }
 
-    private function viewOrders($ordersStatus, $status, $title)
+    private function viewOrders($ordersStatus, $status, $title, $isVendor = true)
     {
         $this->loadModel('Vendors');
 
-        $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
-        $vendor_id = $vendor->get('id');
+        if($isVendor == true) {
 
-        $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where([$ordersStatus => $status, 'Products.vendor_id' => $vendor_id])->all();
+            $vendor = $this->Vendors->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
+            $vendor_id = $vendor->get('id');
+
+            $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where([$ordersStatus => $status, 'Products.vendor_id' => $vendor_id])->all();
+        }
+        else {
+
+            $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where([$ordersStatus => $status, 'Orders.user_id' => $this->Auth->user('id')])->all();
+        }
 
         $this->set('title', $title);
         $this->set(compact('orders'));

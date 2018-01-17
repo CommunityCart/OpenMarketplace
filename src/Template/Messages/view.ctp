@@ -18,9 +18,9 @@
                 </div>
                 <div class="box-body no-padding">
                     <ul class="nav nav-pills nav-stacked">
-                        <li class="<?= $userActive ?>"><a href="/messages?inbox=user"><i class="fa fa-inbox"></i> User Inbox<span class="label label-primary pull-right"><?= $userCount ?></span></a></li>
+                        <li><a href="/messages?inbox=user"><i class="fa fa-inbox"></i> User Inbox<span class="label label-primary pull-right"><?= $userCount ?></span></a></li>
                         <?php if($role == 'vendor') { ?>
-                        <li class="<?= $vendorActive ?>"><a href="/messages?inbox=vendor"><i class="fa fa-envelope-o"></i> Vendor Inbox<span class="label label-primary pull-right"><?= $vendorCount ?></span></a></li>
+                        <li><a href="/messages?inbox=vendor"><i class="fa fa-envelope-o"></i> Vendor Inbox<span class="label label-primary pull-right"><?= $vendorCount ?></span></a></li>
                         <?php } ?>
                     </ul>
                 </div>
@@ -66,7 +66,7 @@
                         <div class="box-header with-border">
                             <h4>Reply</h4>
                         </div>
-                        <?= $this->Form->create(null, ['url' => '/message-send']); ?>
+                        <?= $this->Form->create(null, ['url' => '/message-reply/' . $message->id]); ?>
                         <div class="box-body">
                             <textarea style="width:100%" rows="10" name="reply_field" required></textarea>
                         </div>
@@ -74,9 +74,10 @@
                             <div class="pull-right">
                                 <?= $this->Form->button('<i class="fa fa-envelope-o"></i> Send', ['escape' => false, 'class' => 'btn btn-primary']) ?>
                             </div>
-                            <input type="checkbox" name="reply_encrypt" id="reply_encrypt" /> <label for="reply_encrypt">Encrypt Message on Server</label>
+                            <input type="checkbox" name="reply_encrypt" id="reply_encrypt" /> <label for="reply_encrypt">&nbsp;(Encrypt Reply) This Message Contains Sensitive Information</label>
                         </div>
                         <?= $this->Form->unlockField('reply_field') ?>
+                        <?= $this->Form->unlockField('reply_encrypt') ?>
                         <?= $this->Form->end() ?>
                     </div>
                 </div>

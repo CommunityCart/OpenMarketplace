@@ -2,7 +2,10 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\Utility\Janitor;
 use App\Utility\Vendors;
+use App\Utility\Messages;
+use App\Utility\Crypto;
 
 /**
  * Messages Controller
@@ -67,12 +70,12 @@ class MessagesController extends AppController
 
         if($this->Auth->user('role') == 'vendor') {
 
-            $vendorCount = $this->Messages->find('all', ['contain' => ['Users', 'Vendors']])->Where(['vendor_read' => 0, 'Messages.vendor_id' => $vendor_id, 'vendor_deleted' => 0])->count();
+            $vendorCount = Messages::getVendorCount($vendor_id);
         }
 
         if($inbox == 'vendor' && $this->Auth->user('role') == 'vendor') {
 
-            $messages = $this->paginate($this->Messages->find('all', ['contain' => ['Users', 'Vendors']])->where(['Messages.vendor_id' => $vendor_id, 'vendor_deleted' => 0])->orderDesc('Messages.id'));
+            $messages = $this->paginate($this->Messages->find('all', ['contain' => ['Users', 'Vendors']])->where(['Messages.vendor_id' => $vendor_id, 'vendor_deleted' => 0])->orderDesc('Messages.modified'));
 
             $vendorActive = 'active';
             $userActive = '';
@@ -82,7 +85,7 @@ class MessagesController extends AppController
         }
         else {
 
-            $messages = $this->paginate($this->Messages->find('all', ['contain' => ['Users', 'Vendors']])->where(['Messages.user_id' => $this->Auth->user('id'), 'user_deleted' => 0])->orderDesc('Messages.id'));
+            $messages = $this->paginate($this->Messages->find('all', ['contain' => ['Users', 'Vendors']])->where(['Messages.user_id' => $this->Auth->user('id'), 'user_deleted' => 0])->orderDesc('Messages.modified'));
 
             $vendorActive = '';
             $userActive = 'active';
@@ -91,7 +94,7 @@ class MessagesController extends AppController
             $url = '/messages?inbox=user';
         }
 
-        $userCount = $this->Messages->find('all', ['contain' => ['Users', 'Vendors']])->where(['user_read' => 0, 'Messages.user_id' => $this->Auth->user('id'), 'user_deleted' => 0])->count();
+        $userCount = Messages::getUserCount($this->Auth->user('id'));
 
         $this->set('role', $this->Auth->user('role'));
         $this->set(compact('messages', 'userActive', 'vendorActive', 'userCount', 'vendorCount', 'inboxTitle', 'url', 'checkAll'));
@@ -117,6 +120,11 @@ class MessagesController extends AppController
 
         $message = $this->Messages->find('all', ['contain' => ['Users', 'Vendors', 'MessageMessages']])->where(['Messages.id' => $id, 'Messages.vendor_id' => $vendor_id])->orWhere(['Messages.id' => $id, 'Messages.user_id' => $this->Auth->user('id')])->first();
 
+        if(!isset($message)) {
+
+            Janitor::hackAttempt();
+        }
+
         if($message->get('user_id') == $this->Auth->user('id')) {
 
             $message->set('user_read', 1);
@@ -128,9 +136,82 @@ class MessagesController extends AppController
 
         $this->Messages->save($message);
 
+        if($this->Auth->user('role') == 'vendor') {
+
+            $vendorCount = Messages::getVendorCount($vendor_id);
+        }
+        else {
+
+            $vendorCount = 0;
+        }
+
+        $userCount = Messages::getUserCount($this->Auth->user('id'));
+
+        $this->set('vendorCount', $vendorCount);
+        $this->set('userCount', $userCount);
         $this->set('username', $this->Auth->user('username'));
+        $this->set('role', $this->Auth->user('role'));
         $this->set('vendor_pgp', Vendors::getVendorPGP($vendor_id));
         $this->set('message', $message);
         $this->set('_serialize', ['message']);
+    }
+
+    public function sendReply($id = null)
+    {
+        if($this->Auth->user('role') == 'vendor') {
+
+            $vendor_id = Vendors::getVendorID($this->Auth->user('id'));
+        }
+        else {
+            $vendor_id = 0;
+        }
+
+        $message = $this->Messages->find('all', ['contain' => ['Users', 'Vendors', 'MessageMessages']])->where(['Messages.id' => $id, 'Messages.vendor_id' => $vendor_id])->orWhere(['Messages.id' => $id, 'Messages.user_id' => $this->Auth->user('id')])->first();
+
+        if(!isset($message)) {
+
+            Janitor::hackAttempt();
+        }
+
+        $from_user = 0;
+        $from_vendor = 0;
+
+        if($message->get('user_id') == $this->Auth->user('id')) {
+
+            $from_user = 1;
+            $message->set('vendor_read', 0);
+            $message->set('modified', new \DateTime('now'));
+            $pgp = $this->Auth->user('pgp');
+        }
+        else if($message->get('vendor_id') == $vendor_id) {
+
+            $from_vendor = 1;
+            $message->set('user_read', 0);
+            $message->set('modified', new \DateTime('now'));
+            $pgp = Vendors::getVendorPGP($vendor_id);
+        }
+
+        $body = $this->request->getData('reply_field');
+
+        if($this->request->getData('reply_encrypt') == 'on') {
+
+            $body = Crypto::encryptMessage($body, $pgp);
+        }
+
+        $this->Messages->save($message);
+
+        $this->loadModel('MessageMessages');
+
+        $reply = $this->MessageMessages->newEntity([
+            'message_id' => $message->id,
+            'body' => $body,
+            'created' => new \DateTime('now'),
+            'from_user' => $from_user,
+            'from_vendor' => $from_vendor
+        ]);
+
+        $this->MessageMessages->save($reply);
+
+        return $this->redirect($this->referer());
     }
 }
