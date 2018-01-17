@@ -49,14 +49,6 @@ class Application extends BaseApplication
             // Add routing middleware.
             ->add(new RoutingMiddleware($this));
 
-        $cookies = new EncryptedCookieMiddleware(
-        // Names of cookies to protect
-            ['2fa'],
-            Configure::read('Security.cookieKey')
-        );
-
-        $middlewareQueue->add($cookies);
-
         $middlewareQueue->add(new Authorization($this));
 
         return $middlewareQueue;

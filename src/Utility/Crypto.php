@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Utility;
+use Cake\Utility\Security;
 
 class Crypto
 {
@@ -9,6 +10,14 @@ class Crypto
         $bytes = random_bytes($length);
 
         return bin2hex($bytes);
+    }
+
+    public static function decryptCookie($value)
+    {
+        $prefix = 'Q2FrZQ==.';
+        $value = base64_decode(substr($value, strlen($prefix)));
+
+        return Security::decrypt($value, Security::salt());
     }
 
     public static function encryptMessage($message, $pgp_key)

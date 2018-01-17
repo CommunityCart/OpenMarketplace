@@ -188,6 +188,8 @@ class SettingsController extends AppController
         $this->loadModel('Users');
         $user = $this->Users->find('all')->where(['id' => $this->Auth->user('id')])->first();
 
+        $this->loadComponent('Cookie');
+
         if($user->get('2fa') == 0 || $this->Cookie->read('2fa') == 1) {
 
             return $this->redirect('/dashboard');
@@ -203,6 +205,8 @@ class SettingsController extends AppController
         $this->set('actionUrl', '/login2fa');
         $this->set('user', $user);
         $this->set('challenge', $challenge);
+
+        $this->render('enable2fa');
     }
 
     public function login2fa()
@@ -214,6 +218,8 @@ class SettingsController extends AppController
 
         if($this->request->getData('pgp_challenge_response') == $challenge_response)
         {
+            $this->loadComponent('Cookie');
+
             $this->Cookie->write('2fa', 1);
 
             return $this->redirect('/dashboard');

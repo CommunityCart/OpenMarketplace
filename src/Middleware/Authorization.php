@@ -6,6 +6,8 @@ use App\Utility\Tables;
 use Cake\Core\Configure;
 use Cake\Http\BaseApplication;
 use Cake\Network\Session;
+use Zend\Diactoros\Response\RedirectResponse;
+use App\Utility\Crypto;
 
 class Authorization
 {
@@ -21,6 +23,17 @@ class Authorization
         // Check to see if user has 2fa enabled
         // -> Check to see if 2fa cookie == 1
         // -> else redirect to /display2fa
+
+        $usersTable = Tables::getUsersTable();
+
+        $user_id = $request->session()->read('Auth.User.id');
+
+        $user = $usersTable->find('all')->where(['id' => $user_id])->first();
+
+        if ($request->here != '/display2fa' && $request->here != '/login2fa' && $user->get('2fa') == 1 && Crypto::decryptCookie($request->getCookie('2fa')) != 1) {
+
+            return new RedirectResponse('/display2fa');
+        }
 
         return $next($request, $response);
     }
