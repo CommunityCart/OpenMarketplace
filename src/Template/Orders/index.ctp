@@ -87,7 +87,7 @@
 
                   <?php if($order->status == 0 && $title == 'Shopping Cart') { ?>
                   <?= $this->Html->link(__('Make Deposit'), ['controller' => 'Wallet', 'action' => 'index'], ['class'=>'btn btn-success btn-xs']) ?>
-                  <?= $this->Html->link(__('View'), ['action' => 'orderReview2', $order->id], ['class'=>'btn btn-info btn-xs']) ?>
+                  <?= $this->Html->link(__('View Order'), ['action' => 'orderReview2', $order->id], ['class'=>'btn btn-info btn-xs']) ?>
                   <?php } else if($order->status == 1 && $title == 'Shopping Cart') { ?>
                   <?= $this->Html->link(__('Place Order'), ['controller' => 'Orders', 'action' => 'orderReview2', $order->id], ['class'=>'btn btn-success btn-xs']) ?>
                   <?php } else if($order->status == 5 && $title == 'Shopping Cart') { ?>
@@ -95,7 +95,7 @@
                   <?php } else if($order->status == 6 && $title == 'Shopping Cart') { ?>
                   <?= $this->Html->link(__('Update Review'), ['action' => 'orderReview2', $order->id], ['class'=>'btn btn-xs btn-success']) ?>
                   <?php } else { ?>
-                  <?= $this->Html->link(__('View'), ['action' => 'orderReview2', $order->id], ['class'=>'btn btn-info btn-xs']) ?>
+                  <?= $this->Html->link(__('View Order'), ['action' => 'orderReview2', $order->id], ['class'=>'btn btn-info btn-xs']) ?>
                   <?php } ?>
 
                   <?php if($order->status == -2 && $title == 'Disputed Orders') { ?>

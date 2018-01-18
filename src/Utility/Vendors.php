@@ -8,18 +8,35 @@ use App\Utility\Users;
 
 class Vendors
 {
+    public static $vendor;
+    private static $vendor_id;
+
     // TODO: Find places where we did not use this and replace with this.
     public static function getVendor($vendor_id)
     {
-        $vendorsTable = Tables::getVendorsTable();
+        if(self::$vendor_id != $vendor_id) {
 
-        $vendor = $vendorsTable->find('all')->where(['id' => $vendor_id])->first();
+            self::$vendor = null;
+        }
 
-        return $vendor;
+        if(!isset(self::$vendor) || self::$vendor == null) {
+
+            $vendorsTable = Tables::getVendorsTable();
+
+            self::$vendor = $vendorsTable->find('all')->where(['id' => $vendor_id])->first();
+            self::$vendor_id = $vendor_id;
+        }
+
+        return self::$vendor;
     }
 
     public static function getVendorPGP($vendor_id)
     {
+        if($vendor_id == 0) {
+
+            return '';
+        }
+
         $user_id = self::getVendorUserIDByVendorID($vendor_id);
 
         $users = new Users();
@@ -37,11 +54,30 @@ class Vendors
 
     public static function getVendorID($user_id)
     {
-        $vendorsTable = Tables::getVendorsTable();
+        if(!isset(self::$vendor) || self::$vendor == null || self::$vendor->get('user_id') != $user_id) {
 
-        $vendor = $vendorsTable->find('all')->where(['user_id' => $user_id])->first();
+            $vendorsTable = Tables::getVendorsTable();
 
-        return $vendor->get('id');
+            self::$vendor = $vendorsTable->find('all')->where(['user_id' => $user_id])->first();
+
+            if(!isset(self::$vendor)) {
+
+                self::$vendor_id = 0;
+            }
+            else {
+
+                self::$vendor_id = self::$vendor->get('id');
+            }
+        }
+
+        if(isset(self::$vendor)) {
+
+            return self::$vendor->get('id');
+        }
+        else {
+
+            return 0;
+        }
     }
 
     public static function getVendorIDByOrder($order)

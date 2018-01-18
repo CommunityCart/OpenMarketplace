@@ -7,6 +7,8 @@ use App\Utility\Currency;
 
 class Wallet {
 
+    public static $ordersEscrowResult;
+
     public static function getWalletTable()
     {
         $Table = TableRegistry::get('wallets');
@@ -44,9 +46,7 @@ class Wallet {
 
     public static function getWalletBalance($user_id)
     {
-        $usersTable = self::getUsersTable();
-
-        $user = $usersTable->find('all')->where(['id' => $user_id])->first();
+        $user = Users::getUser($user_id);
 
         $totalBalance = $user->get('balance');
 
@@ -62,9 +62,7 @@ class Wallet {
 
     public static function getOrdersEscrowDollars($user_id)
     {
-        $vendorsTable = self::getVendorTable();
-
-        $vendor = $vendorsTable->find('all')->where(['user_id' => $user_id])->first();
+        $vendor = Vendors::getVendor(Vendors::getVendorID($user_id));
 
         $productsTable = self::getProductsTable();
 
@@ -89,9 +87,7 @@ class Wallet {
 
     public static function getOrdersEscrowCrypto($user_id)
     {
-        $vendorsTable = self::getVendorTable();
-
-        $vendor = $vendorsTable->find('all')->where(['user_id' => $user_id])->first();
+        $vendor = Vendors::getVendor(Vendors::getVendorID($user_id));
 
         $productsTable = self::getProductsTable();
 
@@ -118,11 +114,14 @@ class Wallet {
     {
         $ordersTable = self::getOrdersTable();
 
-        $orders = $ordersTable->find('all')->where(['user_id' => $user_id, 'status >' => 1, 'paid_vendor' => 0])->all();
+        if(!isset(self::$ordersEscrowResult) || self::$ordersEscrowResult == null) {
+
+            self::$ordersEscrowResult = $ordersTable->find('all')->where(['user_id' => $user_id, 'status >' => 1, 'paid_vendor' => 0])->all();
+        }
 
         $total = 0;
 
-        foreach($orders as $order) {
+        foreach(self::$ordersEscrowResult as $order) {
 
             $total = $total + $order->get('order_total_dollars');
         }
@@ -134,11 +133,14 @@ class Wallet {
     {
         $ordersTable = self::getOrdersTable();
 
-        $orders = $ordersTable->find('all')->where(['user_id' => $user_id, 'status >' => 1, 'paid_vendor' => 0])->all();
+        if(!isset(self::$ordersEscrowResult) || self::$ordersEscrowResult == null) {
+
+            self::$ordersEscrowResult = $ordersTable->find('all')->where(['user_id' => $user_id, 'status >' => 1, 'paid_vendor' => 0])->all();
+        }
 
         $total = 0;
 
-        foreach($orders as $order) {
+        foreach(self::$ordersEscrowResult as $order) {
 
             $total = $total + $order->get('order_total_crypto');
         }

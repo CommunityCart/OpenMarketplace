@@ -151,7 +151,7 @@ class MessagesController extends AppController
         $this->set('userCount', $userCount);
         $this->set('username', $this->Auth->user('username'));
         $this->set('role', $this->Auth->user('role'));
-        $this->set('vendor_pgp', Vendors::getVendorPGP($vendor_id));
+        $this->set('vendor_pgp', Vendors::getVendorPGP($message->get('vendor_id')));
         $this->set('message', $message);
         $this->set('_serialize', ['message']);
     }

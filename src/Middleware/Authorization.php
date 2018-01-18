@@ -30,7 +30,11 @@ class Authorization
 
         $user = $usersTable->find('all')->where(['id' => $user_id])->first();
 
-        if ($request->here != '/display2fa' && $request->here != '/login2fa' && $user->get('2fa') == 1 && Crypto::decryptCookie($request->getCookie('2fa')) != 1) {
+        if($user == null && substr($request->here, 0, 14) != '/youre-invited' && $request->here != '/login' && $request->here != '/register' && $request->here != '/captcha') {
+            return new RedirectResponse('/login');
+        }
+
+        if ($request->here != '/register' && substr($request->here, 0, 14) != '/youre-invited' && $request->here != '/captcha' && $request->here != '/login' && $request->here != '/display2fa' && $request->here != '/login2fa' && $user->get('2fa') == 1 && Crypto::decryptCookie($request->getCookie('2fa')) != 1) {
 
             return new RedirectResponse('/display2fa');
         }

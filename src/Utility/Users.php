@@ -13,7 +13,28 @@ use Cake\Core\Configure;
 
 class Users
 {
-    public function getUserTable()
+    public static $user;
+    private static $user_id;
+
+    public static function getUser($user_id)
+    {
+        if(self::$user_id != $user_id || self::$user->get('id') != $user_id) {
+
+            self::$user = null;
+        }
+
+        if(!isset(self::$user) || self::$user == null) {
+
+            $usersTable = self::getUserTable();
+
+            self::$user = $usersTable->find('all')->where(['id' => $user_id])->first();
+            self::$user_id = $user_id;
+        }
+
+        return self::$user;
+    }
+
+    public static function getUserTable()
     {
         $usersTable = TableRegistry::get(Configure::read('Users.table'));
 

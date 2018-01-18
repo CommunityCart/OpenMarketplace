@@ -98,7 +98,7 @@
                 </div>
                 <!-- /.box-header -->
                 <div class="box-body">
-                    <textarea style="width:100%" rows="15"><?php if($username == $message->user->username) { echo $vendor_pgp; } else { echo $message->user->pgp; } ?></textarea>
+                    <pre><?php if($username == $message->user->username) { echo $vendor_pgp; } else { echo $message->user->pgp; } ?></pre>
                 </div>
             </div>
         </div>

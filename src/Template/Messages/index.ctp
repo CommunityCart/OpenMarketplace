@@ -53,14 +53,14 @@ use App\Utility\Dates;
               <tr>
                 <td><input type="checkbox" name="checkie[]" value="<?= $message->id ?>" <?php if($checkAll == true) { ?>checked<?php } ?>></td>
                 <?php if($role == 'vendor') { ?>
-                  <td class="mailbox-name"><?= $message->user->username ?></td>
+                  <td nowrap="true" class="mailbox-name"><?= $message->user->username ?></td>
                   <?php if($message->vendor_read == 0) { ?>
                     <td><span class="label label-success pull-right">UNREAD</span></td>
                   <?php } else { ?>
                     <td><span class="label label-primary pull-right">READ</span></td>
                   <?php } ?>
                 <?php } else { ?>
-                  <td class="mailbox-name"><?= $message->has('vendor') ? $this->Html->link($message->vendor->title, ['controller' => 'Vendors', 'action' => 'view', $message->vendor->id], ['target' => '_blank']) : '' ?></td>
+                  <td nowrap="true" class="mailbox-name"><?= $message->has('vendor') ? $this->Html->link($message->vendor->title, ['controller' => 'Vendors', 'action' => 'view', $message->vendor->id], ['target' => '_blank']) : '' ?></td>
                   <?php if($message->user_read == 0) { ?>
                     <td><span class="label label-success pull-right">UNREAD</span></td>
                   <?php } else { ?>

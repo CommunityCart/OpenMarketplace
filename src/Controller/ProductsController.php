@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Controller\AppController;
 use Cake\ORM\TableRegistry;
+use App\Utility\Vendors;
 
 /**
  * Products Controller
@@ -88,9 +89,26 @@ class ProductsController extends AppController
         }
 
         $product = $this->Products->get($id, [
-            'contain' => ['Vendors', 'Vendors.Users', 'ProductCategories', 'Countries', 'Orders', 'ProductCountries', 'ProductImages', 'Vendors.ShippingOptions']
+            'contain' => ['Vendors', 'Vendors.Users', 'ProductCategories', 'Countries', 'Orders', 'Orders.Reviews', 'ProductCountries', 'ProductImages', 'Vendors.ShippingOptions']
         ]);
 
+        $this->loadModel('Reviews');
+
+        $reviews = $this->Reviews->find('all', ['contain' => ['Orders']])->where(['Orders.product_id' => $id])->limit(50)->orderDesc('Reviews.created')->all();
+
+        $this->loadModel('Orders');
+
+        $proudctOrderCount = $this->Orders->find('all')->where(['product_id' => $id])->count();
+        $vendorOrderCount = $this->Orders->find('all', ['contain' => ['Products']])->where(['Products.vendor_id' => $product->get('vendor_id'), 'Orders.status >' => 1])->count();
+
+        $this->loadModel('Vendors');
+
+        $vendorRating = $this->Vendors->find('all')->where(['id' => $product->get('vendor_id')])->first();
+
+        $this->set('vendorOrderCount', $vendorOrderCount);
+        $this->set('vendorRating', $vendorRating->get('rating'));
+        $this->set('productOrderCount', $proudctOrderCount);
+        $this->set('reviews', $reviews);
         $this->set('id', $id);
         $this->set('image_index', $image_index);
         $this->set('product', $product);

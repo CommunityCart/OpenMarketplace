@@ -1,17 +1,5 @@
 <?php
-/**
- * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
- * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- *
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- * @link      https://cakephp.org CakePHP(tm) Project
- * @since     0.2.9
- * @license   https://opensource.org/licenses/mit-license.php MIT License
- */
+
 namespace App\Controller;
 
 use App\Utility\Sidebar;
@@ -25,6 +13,11 @@ use App\Utility\Litecoin;
 use Cake\Cache\Cache;
 use Cake\Utility\Security;
 use App\Utility\Math;
+use App\Utility\Messages;
+use App\Utility\MenuCounts;
+use App\Utility\Tables;
+use App\Utility\Vendors;
+use App\Utility\Users;
 
 /**
  * Application Controller
@@ -67,16 +60,25 @@ class AppController extends Controller
 
     public function beforeRender(Event $event)
     {
-        $this->doWallet();
+        if($this->Auth->user() != null) {
+
+            $user = Users::getUser($this->Auth->user('id'));
+
+            $this->doWallet($user);
+        }
+        else {
+
+            $user = null;
+        }
 
         $collapse = $this->getCollapse();
 
-        $this->set('menus', $this->buildMenus($collapse));
+        $this->set('menus', $this->buildMenus($collapse, $user));
 
         return parent::beforeRender($event);
     }
 
-    private function doWallet()
+    private function doWallet($user)
     {
         if(!isset($this->Auth) || $this->Auth->user('id') === null) {
 
@@ -97,7 +99,11 @@ class AppController extends Controller
             $account = 'hello';
         }
 
+        $usersTable = \App\Utility\Wallet::getUsersTable();
+
         if(!isset($wallets) || count($wallets) == 0) {
+
+            MenuCounts::updateUserViewedWallet($user->get('id'));
 
             $firstWallet = $litecoin->generateNewDepositAddress($account);
             $privateKeyUnencrypted = $litecoin->getPrivateKeyByAddress($firstWallet);
@@ -116,12 +122,13 @@ class AppController extends Controller
         }
         else {
 
-            $usersTable = \App\Utility\Wallet::getUsersTable();
+            $balance = number_format($litecoin->checkAccountForBalance($account), 8);
 
-            $user = $usersTable->find('all')->where(['id' => $this->Auth->user('id')])->first();
+            if($user->get('balance') != $balance) {
 
-            $user->set('balance', number_format($litecoin->checkAccountForBalance($account), 8));
-            $usersTable->save($user);
+                $user->set('balance', $balance);
+                $usersTable->save($user);
+            }
 
             $cacheTimestamp = Cache::read($this->Auth->user('id') . '.wallet_balances', 'memcache');
 
@@ -152,13 +159,15 @@ class AppController extends Controller
             }
             else {
 
-                return;
+                // return;
             }
         }
 
         $lastWallet = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')])->last();
 
         if($lastWallet->get('wallet_balance') > 0) {
+
+            MenuCounts::updateUserViewedWallet($user->get('id'));
 
             $nextWallet = $litecoin->generateNewDepositAddress($account);
             $privateKeyUnencrypted = $litecoin->getPrivateKeyByAddress($nextWallet);
@@ -234,6 +243,11 @@ class AppController extends Controller
                 }
 
                 $amount = number_format($amount, 8);
+
+                if($amount > 0) {
+
+                    MenuCounts::updateUserViewedWallet($user->get('id'));
+                }
 
                 if($accountTransaction['category'] == 'move') {
 
@@ -327,15 +341,11 @@ class AppController extends Controller
         return $product_categories;
     }
 
-    private function buildMenus($collapse)
+    private function buildMenus($collapse, $currentUser)
     {
         if(method_exists($this->Auth, 'user')) {
 
             if ($this->Auth->user('id')) {
-
-                $currentId = $this->Auth->user('id');
-
-                $currentUser = TableRegistry::get(Configure::read('Users.table'))->get($this->Auth->user('id'));
 
                 $productCategoriesTable = TableRegistry::get('product_categories');
                 $productCategoriesQuery = $productCategoriesTable->find('all')->where(['product_category_id' => 0]);
@@ -371,7 +381,7 @@ class AppController extends Controller
 
                 //$this->buildUserDashboard($collapse, $currentUser->role);
                 Sidebar::addMenuGroup($productNavigation, $currentUser->role);
-                $this->buildUserMenu($collapse, $currentUser->role);
+                $this->buildUserMenu($collapse, $currentUser->role, $currentUser);
 
                 switch($currentUser->get('role')) {
                     case 'vendor':
@@ -424,7 +434,13 @@ class AppController extends Controller
         Sidebar::addMenuGroup($userHeader, $role);
     }
 
-    private function buildUserMenu($collapse, $role) {
+    private function buildUserMenu($collapse, $role, $user) {
+
+        $cartCounts = MenuCounts::getShoppingCartCounts($user);
+        $walletCount = MenuCounts::getWalletCount($user);
+        $messageCount = MenuCounts::getMessageCounts($user->get('id'));
+        $disputesCount = MenuCounts::getDisputesCount($user);
+        $invitesCount = MenuCounts::getInvitesCount($user);
 
         $userNavigation = array(
             'type'  => 'group',
@@ -436,23 +452,23 @@ class AppController extends Controller
                     'path' => '/dashboard' . '?' . $collapse,
                     'icon' => 'fa-dashboard'
                 ],
-                'Shopping Cart' => [
+                'Shopping Cart' . $cartCounts => [
                     'path' => '/orders' . '?' . $collapse,
                     'icon' => 'fa-shopping-cart'
                 ],
-                'Wallet' => [
+                'Wallet' . $walletCount => [
                     'path' => '/wallet' . '?' . $collapse,
                     'icon' => 'fa-money'
                 ],
-                'Messages' => [
+                'Messages' . $messageCount => [
                     'path' => '/messages' . '?' . $collapse,
                     'icon' => 'fa-envelope-o'
                 ],
-                'Disputes' => [
+                'Disputes' . $disputesCount => [
                     'path' => '/disputes' . '?' . $collapse,
                     'icon' => 'fa-thumbs-down'
                 ],
-                'Invites' => [
+                'Invites' . $invitesCount => [
                     'path' => '/invites' . '?' . $collapse,
                     'icon' => 'fa-bullhorn'
                 ],
@@ -478,13 +494,27 @@ class AppController extends Controller
     }
 
     private function buildVendorMenu($collapse, $role) {
+
+        $incomingCount = '';
+        $finalizedCount = '';
+        $disputedCount = '';
+
+        if($role == 'vendor') {
+
+            $vendor = Vendors::getVendor(Vendors::getVendorID($this->Auth->user('id')));
+
+            $incomingCount = MenuCounts::getVendorIncomingCounts($vendor);
+            $finalizedCount = MenuCounts::getVendorFinalizedCounts($vendor);
+            $disputedCount = MenuCounts::getVendorDisputedCounts($vendor);
+        }
+
         $userNavigation = array(
             'type'  => 'group',
             'group' => 'Vendor Menu',
             'icon'  => 'fa-dollar',
             'css'   => 'active non-active',
             'menu' => [
-                'Incoming Orders' => [
+                'Incoming Orders' . $incomingCount => [
                     'path' => '/incoming' . '?' . $collapse,
                     'icon' => 'fa-shopping-cart'
                 ],
@@ -496,11 +526,11 @@ class AppController extends Controller
                     'path' => '/shipped-orders' . '?' . $collapse,
                     'icon' => 'fa-ship'
                 ],
-                'Finalized Orders' => [
+                'Finalized Orders' . $finalizedCount => [
                     'path' => '/finalized-orders' . '?' . $collapse,
                     'icon' => 'fa-thumbs-up'
                 ],
-                'Disputed Orders' => [
+                'Disputed Orders' . $disputedCount => [
                     'path' => '/disputed-orders' . '?' . $collapse,
                     'icon' => 'fa-thumbs-down'
                 ],

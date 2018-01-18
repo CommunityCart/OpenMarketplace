@@ -17,9 +17,19 @@ class Messages
 
     public static function getVendorCount($vendor_id)
     {
+        if($vendor_id == 0) {
+
+            return 0;
+        }
+
         $messagesTable = Tables::getMessagesTable();
 
-        $vendorCount = $messagesTable   ->find('all', ['contain' => ['Users', 'Vendors']])->Where(['vendor_read' => 0, 'Messages.vendor_id' => $vendor_id, 'vendor_deleted' => 0])->count();
+        $vendorCount = $messagesTable->find('all', ['contain' => ['Users', 'Vendors']])->Where(['vendor_read' => 0, 'Messages.vendor_id' => $vendor_id, 'vendor_deleted' => 0])->count();
+
+        if(!isset($vendorCount)) {
+
+            return 0;
+        }
 
         return $vendorCount;
     }

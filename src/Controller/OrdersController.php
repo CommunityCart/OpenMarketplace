@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\Utility\Crypto;
 use App\Utility\Janitor;
 use App\Utility\Settings;
 use App\Utility\Wallet;
@@ -10,6 +11,7 @@ use App\Utility\Math;
 use App\Utility\Invites;
 use App\Utility\Vendors;
 use Cake\Cache\Cache;
+use App\Utility\MenuCounts;
 
 /**
  * Orders Controller
@@ -31,7 +33,7 @@ class OrdersController extends AppController
         $this->loadModel('Vendors');
         $this->loadModel('Disputes');
 
-        $order = $this->Orders->find('all', ['contain' => ['Reviews']])->where(['id' => $id, 'user_id' => $this->Auth->user('id')])->first();
+        $order = $this->Orders->find('all', ['contain' => ['Reviews', 'Products', 'Products.Vendors', 'Products.Vendors.Users']])->where(['Orders.id' => $id, 'Orders.user_id' => $this->Auth->user('id')])->first();
 
         if($idIsProduct == true)
         {
@@ -108,6 +110,8 @@ class OrdersController extends AppController
             ]);
 
             $this->Orders->save($order);
+
+            $order = $this->Orders->find('all', ['contain' => ['Reviews', 'Products', 'Products.Vendors', 'Products.Vendors.Users']])->where(['Orders.id' => $order->id, 'Orders.user_id' => $this->Auth->user('id')])->first();
         }
 
         if($order->get('status') == -2)
@@ -122,6 +126,12 @@ class OrdersController extends AppController
             $this->set('userIsVendor', true);
         }
 
+        $this->loadModel('Reviews');
+
+        $reviews = $this->Reviews->find('all', ['contain' => ['Orders']])->where(['Orders.product_id' => $productsResult->id])->limit(50)->orderDesc('Reviews.created')->all();
+
+
+        $this->set('reviews', $reviews);
         $this->set('totalBalance', $totalBalance);
         $this->set('order', $order);
         $this->set('vendorRating', $vendorRating->get('rating'));
@@ -161,17 +171,16 @@ class OrdersController extends AppController
 
             $shipping_options = $order->shipping_option_id;
 
-            $productsResult = $this->Products->find('all', ['contain' => ['Vendors', 'Vendors.Users', 'ProductCategories', 'Countries', 'Orders', 'ProductCountries', 'ProductImages', 'Vendors.ShippingOptions']])->where(['Products.id' => $order->product_id])->first();
+            $productsResult = $this->Products->find('all', ['contain' => []])->where(['Products.id' => $order->product_id])->first();
             $shippingOptions = $this->ShippingOptions->find('all')->where(['id' => $shipping_options])->first();
 
-            if($totalBalance > (($productsResult->cost * $order->quantity) + $shippingOptions->get('shipping_cost'))) {
+            if($totalBalance[0] > (($productsResult->cost * $order->quantity) + $shippingOptions->get('shipping_cost'))) {
 
                 $missingBalance = 0;
                 $status = 1;
             }
             else {
-                $missingBalance = (($productsResult->cost * $order->quantity) + $shippingOptions->get('shipping_cost')) - $totalBalance;
-
+                $missingBalance = (($productsResult->cost * $order->quantity) + $shippingOptions->get('shipping_cost')) - $totalBalance[0];
                 $status = 0;
             }
 
@@ -184,6 +193,8 @@ class OrdersController extends AppController
         }
 
         $orders = $this->Orders->find('all', ['contain' => ['Users', 'Products', 'ShippingOptions']])->where(['Orders.user_id' => $this->Auth->user('id')])->all();
+
+        MenuCounts::updateUserViewedShoppingCart($this->Auth->user('id'), null, true);
 
         $this->set('title', 'Shopping Cart');
         $this->set(compact('orders'));
@@ -208,6 +219,8 @@ class OrdersController extends AppController
 
     public function incoming()
     {
+        MenuCounts::updateVendorViewedIncoming(Vendors::getVendorID($this->Auth->user('id')), true);
+
         $this->viewOrders('Orders.status',2, 'Incoming Orders');
     }
 
@@ -218,16 +231,22 @@ class OrdersController extends AppController
 
     public function finalizedOrders()
     {
+        MenuCounts::updateVendorViewedFinalized(Vendors::getVendorID($this->Auth->user('id')), true);
+
         $this->viewOrders('Orders.status >', 4, 'Finalized Orders');
     }
 
     public function disputes()
     {
+        MenuCounts::updateUserViewedDisputes($this->Auth->user('id'), true);
+
         $this->viewOrders('Orders.status', -2, 'Disputed Orders', false);
     }
 
     public function disputedOrders()
     {
+        MenuCounts::updateVendorViewedDisputed(Vendors::getVendorID($this->Auth->user('id')), true);
+
         $this->viewOrders('Orders.status', -2, 'Disputed Orders');
     }
 
@@ -260,7 +279,17 @@ class OrdersController extends AppController
 
         $this->amiuser($order);
 
+        MenuCounts::updateUserViewedShoppingCart($this->Auth->user('id'));
+        MenuCounts::updateVendorViewedIncoming(Vendors::getVendorIDByOrder($order));
+
         $data = $this->request->getData('shipping_details');
+
+        if($this->request->getData('encrypt_shipping') == 'on')
+        {
+            $vendor_id = Vendors::getVendorIDByOrder($order);
+
+            $data = Crypto::encryptMessage($data, Vendors::getVendorPGP($vendor_id));
+        }
 
         $order->set('shipping_details', $data);
         $order->set('status', 2);
@@ -276,6 +305,8 @@ class OrdersController extends AppController
 
         $this->amirite($order);
 
+        MenuCounts::updateUserViewedShoppingCart($order->get('user_id'));
+
         $order->set('status', 3);
         $order->set('accepted', new \DateTime('now'));
         $this->Orders->save($order);
@@ -288,6 +319,8 @@ class OrdersController extends AppController
         $order = $this->Orders->get($id);
 
         $this->amirite($order);
+
+        MenuCounts::updateUserViewedShoppingCart($order->get('user_id'), true);
 
         $order->set('status', -1);
         $this->Orders->save($order);
@@ -323,6 +356,9 @@ class OrdersController extends AppController
         $order = $this->Orders->get($id);
 
         $this->amiuser($order);
+
+        MenuCounts::updateUserViewedDisputes($this->Auth->user('id'));
+        MenuCounts::updateVendorViewedDisputed(Vendors::getVendorIDByOrder($order));
 
         $order->set('status', -2);
         $this->Orders->save($order);
@@ -378,6 +414,8 @@ class OrdersController extends AppController
 
         $this->amirite($order);
 
+        MenuCounts::updateUserViewedShoppingCart($order->get('user_id'));
+
         $order->set('status', 4);
         $order->set('shipped', new \DateTime('now'));
         $this->Orders->save($order);
@@ -431,6 +469,8 @@ class OrdersController extends AppController
         $order->set('status', 5);
         $order->set('finalized', new \DateTime('now'));
         $this->Orders->save($order);
+
+        MenuCounts::updateVendorViewedFinalized(Vendors::getVendorIDByOrder($order));
 
         $this->loadModel('InvitesFinalized');
 

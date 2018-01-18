@@ -333,6 +333,7 @@
                                 <div class="col-md-12">
                                     <center><span>Enter Your Shipping Details Below</span></center>
                                     <textarea style="width:100%;" rows="4" name="shipping_details" required><?php if(isset($order->shipping_details) && $order->shipping_details != '') { ?><?= $order->shipping_details ?><?php } ?></textarea>
+                                    <center><input type="checkbox" name="encrypt_shipping" id="encrypt_shipping" /><label for="encrypt_shipping">&nbsp;Encrypt Shipping Details</label></center>
                                 </div>
                             </div>
                             <hr/>
@@ -405,6 +406,45 @@
                     </div>
                     <!-- /.box-header -->
                     <div class="box-body table-responsive no-padding">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <pre><?php $parser = new \cebe\markdown\Markdown(); echo $parser->parse($order->product->vendor->user->pgp); ?></pre>
+            </div>
+            <div class="col-md-6">
+                <div class="box box-solid">
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>Stars</th>
+                                <th>Comment</th>
+                                <th>Timestamp</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            <?php foreach($reviews as $review) { ?>
+                            <tr>
+                                <td nowrap="true"><?php $x = 0; ?>
+                                    <?php for($i = 0; $i < $review->stars; $i++) { ?>
+                                    <span class="fa fa-star checked"></span>
+                                    <?php $x = $x + 1; ?>
+                                    <?php } ?>
+                                    <?php for($y = $x; $y < 5; $y++) { ?>
+                                    <span class="fa fa-star"></span>
+                                    <?php } ?></td>
+                                <td><?= $review->comment ?></td>
+                                <td><?= $review->created ?></td>
+                            </tr>
+                            <?php } ?>
+
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

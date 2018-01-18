@@ -40,8 +40,6 @@
 ##### H5
 ###### H6
 
-Alternatively
-
 Alt-H1
 ======
 
@@ -51,15 +49,6 @@ Alt-H2
 italics, *asterisks*
 
 bold, **asterisks**
-
-Strike ~~Scratch this.~~
-
-1. First ordered
-2. Another item
-⋅⋅* Unordered sub-list.
-1. Actual numbers
-⋅⋅1. Ordered sub-list
-4. And another item.
 
 * Unordered asterisks
 - Or minuses

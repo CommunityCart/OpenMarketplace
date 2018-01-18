@@ -2,12 +2,6 @@
     <h1>
         <?= h($product->title) ?>
     </h1>
-    <ol class="breadcrumb">
-        <li>
-            <?= $this->Html->link('<i class="fa fa-dashboard"></i> ' . __('Back'), ['action' => 'index'], ['escape' =>
-            false])?>
-        </li>
-    </ol>
 </section>
 <style>
     .checked {
@@ -54,7 +48,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <span><a href="/vendor/<?= $product->vendor->id ?>"><?= $product->vendor->user->username ?></a>&nbsp;&nbsp;(11,500 / 4.94)</span>
+                                        <span><a href="/vendor/<?= $product->vendor->id ?>"><?= $product->vendor->user->username ?></a>&nbsp;&nbsp;(<?= $vendorOrderCount ?>) (<?= $vendorRating ?> Stars)</span>
                                     </div>
                                 </div>
                                 <hr/>
@@ -67,12 +61,15 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-12">
+                                        <?php $x = 0; ?>
+                                        <?php for($i = 0; $i < $product->rating; $i++) { ?>
                                         <span class="fa fa-star checked"></span>
-                                        <span class="fa fa-star checked"></span>
-                                        <span class="fa fa-star checked"></span>
+                                        <?php $x = $x + 1; ?>
+                                        <?php } ?>
+                                        <?php for($y = $x; $y < 5; $y++) { ?>
                                         <span class="fa fa-star"></span>
-                                        <span class="fa fa-star"></span>
-                                        &nbsp;&nbsp;(1,500)
+                                        <?php } ?>
+                                        &nbsp;&nbsp;(<?= $productOrderCount ?>)
                                     </div>
                                 </div>
                                 <hr/>
@@ -152,6 +149,45 @@
             <!-- /.box -->
         </div>
         <!-- ./col -->
+    </div>
+    <div class="row">
+        <div class="col-md-offset-0 col-md-6">
+            <pre><?php $parser = new \cebe\markdown\Markdown(); echo $parser->parse($product->vendor->tos); ?></pre>
+        </div>
+        <div class="col-md-6">
+            <div class="box box-solid">
+                <!-- /.box-header -->
+                <div class="box-body">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>Stars</th>
+                    <th>Comment</th>
+                    <th>Timestamp</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                <?php foreach($reviews as $review) { ?>
+                    <tr>
+                        <td nowrap="true"><?php $x = 0; ?>
+                            <?php for($i = 0; $i < $review->stars; $i++) { ?>
+                            <span class="fa fa-star checked"></span>
+                            <?php $x = $x + 1; ?>
+                            <?php } ?>
+                            <?php for($y = $x; $y < 5; $y++) { ?>
+                            <span class="fa fa-star"></span>
+                            <?php } ?></td>
+                        <td><?= $review->comment ?></td>
+                        <td><?= $review->created ?></td>
+                    </tr>
+                <?php } ?>
+
+                </tbody>
+            </table>
+                </div>
+            </div>
+        </div>
     </div>
     <!-- div -->
 

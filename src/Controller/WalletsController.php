@@ -2,6 +2,8 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\Utility\Users;
+use App\Utility\MenuCounts;
 
 /**
  * Wallets Controller
@@ -23,7 +25,10 @@ class WalletsController extends AppController
         $this->loadModel('Orders');
         $this->loadModel('WalletTransactions');
 
-        $user = $this->Users->find('all')->where(['id' => $this->Auth->user('id')])->first();
+        $user = Users::getUser($this->Auth->user('id'));
+
+        MenuCounts::updateUserViewedWallet($this->Auth->user('id'), true);
+
         $orders = $this->Orders->find('all')->where(['user_id' => $this->Auth->user('id'), 'status' => 0])->all();
 
         if(count($orders) > 0) {
@@ -36,7 +41,6 @@ class WalletsController extends AppController
             }
         }
 
-        $currentWallet = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')])->last();
         $wallets = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')]);
 
         $walletTransactions = $this->WalletTransactions->find('all');
@@ -44,6 +48,8 @@ class WalletsController extends AppController
         foreach($wallets as $wallet)
         {
             $walletTransactions = $walletTransactions->orWhere(['wallet_id' => $wallet->get('id')]);
+
+            $currentWallet = $wallet;
         }
 
         $walletTransactions = $walletTransactions->orderDesc('transaction_time')->limit(100)->all();

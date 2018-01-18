@@ -21,7 +21,7 @@ class Litecoin
         ];
 
         try {
-            $this->wallet = new Wallet(new JsonRPC($conf), 2);
+            $this->wallet = new Wallet(new JsonRPC($conf), 6);
 
         } catch (RPCException $e) {
 
