@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Controller\AppController;
 use App\Utility\Settings;
 use Cake\Routing\Router;
+use App\Utility\MenuCounts;
 
 /**
  * Invites Controller
@@ -21,6 +22,8 @@ class InvitesController extends AppController
      */
     public function index()
     {
+        MenuCounts::updateUserViewedInvites($this->Auth->user('id'), true);
+
         $this->loadModel('InvitesClaimed');
         $this->loadModel('InvitesFinalized');
         $this->loadModel('Orders');

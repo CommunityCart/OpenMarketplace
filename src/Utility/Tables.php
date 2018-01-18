@@ -7,6 +7,13 @@ use Cake\ORM\TableRegistry;
 //TODO: Move GetTables Methods From Other Utilities To Here
 class Tables
 {
+    public static function getCurrencyTable()
+    {
+        $Table = TableRegistry::get('currencies');
+
+        return $Table;
+    }
+
     public static function getInvitesTable()
     {
         $Table = TableRegistry::get('invites');

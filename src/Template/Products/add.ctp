@@ -43,7 +43,7 @@
             </div>
           <!-- /.box-body -->
           <div class="box-footer">
-            <span>Images can be added from the product view page after saving.</span>
+            <span>Images can be added from the product edit page after saving.</span>
             <?= $this->Form->button(__('Save'), ['class' => 'btn btn-primary pull-right']) ?>
           </div>
         <?= $this->Form->end() ?>

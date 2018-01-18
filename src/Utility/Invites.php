@@ -38,6 +38,16 @@ class Invites
         $invitesClaimedTable->save($invite);
     }
 
+    public static function upgradeToVendor($user, $vendor_id)
+    {
+        $inviteClaimedTable = Tables::getInvitesClaimedTable();
+        $invitee = $inviteClaimedTable->find('all')->where(['user_id' => $user->get('id')])->first();
+
+        $invitee->set('upgraded_to_vendor', 1);
+        $invitee->set('vendor_id', $vendor_id);
+        $inviteClaimedTable->save($invitee);
+    }
+
     public static function getVendorInviteID($order)
     {
         $product = Products::getProduct($order->get('product_id'));

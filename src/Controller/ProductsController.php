@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Controller\AppController;
 use Cake\ORM\TableRegistry;
 use App\Utility\Vendors;
+use App\Utility\Currency;
 
 /**
  * Products Controller
@@ -12,6 +13,7 @@ use App\Utility\Vendors;
  *
  * @method \App\Model\Entity\Product[] paginate($object = null, array $settings = [])
  */
+// TODO: Import / Export Products
 class ProductsController extends AppController
 {
 
@@ -50,9 +52,7 @@ class ProductsController extends AppController
      */
     public function index()
     {
-        $vendorTable = TableRegistry::get('vendors');
-        $vendorsQuery = $vendorTable->find('all')->where(['user_id' => $this->Auth->user('id')]);
-        $vendorResult = $vendorsQuery->first();
+        $vendorResult = Vendors::getVendor(Vendors::getVendorID($this->Auth->user('id')));
 
         $this->paginate = [
             'contain' => ['Vendors', 'ProductCategories', 'Countries', 'ProductImages']
@@ -69,7 +69,11 @@ class ProductsController extends AppController
             $this->redirect('/dashboard?collapse=false');
         }
 
-        $this->set(compact('products'));
+        $this->loadModel('ShippingOptions');
+
+        $shippingOptionsCount = $this->ShippingOptions->find('all')->where(['vendor_id' => $vendorResult->get('id')])->count();
+
+        $this->set(compact('products', 'shippingOptionsCount'));
         $this->set('_serialize', ['products']);
     }
 
@@ -138,7 +142,8 @@ class ProductsController extends AppController
                     'cost' => $data['cost'],
                     'product_category_id' => $data['product_category_id'],
                     'country_id' => $data['country_id'],
-                    'created' => new \DateTime('now')
+                    'created' => new \DateTime('now'),
+                    'currency_id' => Currency::getCurrencyID('USD')
                 ]);
 
                 if ($this->Products->save($product)) {

@@ -6,6 +6,7 @@ use App\Utility\Janitor;
 use App\Utility\Vendors;
 use App\Utility\Images;
 use App\Utility\Crypto;
+use App\Utility\Users;
 
 /**
  * Settings Controller
@@ -50,11 +51,13 @@ class SettingsController extends AppController
                 break;
 
             case 'vendor':
-                $settingsTitle = 'Vendor Settings';
-                $this->loadModel('Vendors');
-                $vendor = $this->Vendors->find('all')->where(['id' => $vendor_id])->first();
-                $this->set('vendor', $vendor);
-                $vendorActive = 'active';
+                if($this->Auth->user('role') == 'vendor') {
+                    $settingsTitle = 'Vendor Settings';
+                    $this->loadModel('Vendors');
+                    $vendor = $this->Vendors->find('all')->where(['id' => $vendor_id])->first();
+                    $this->set('vendor', $vendor);
+                    $vendorActive = 'active';
+                }
                 break;
         }
 
@@ -115,7 +118,7 @@ class SettingsController extends AppController
             Images::resizeImage($originalPath . '.jpg', WWW_ROOT . 'images/' . date('M-Y') . '/' . basename($filePath) . '.display.jpg');
             Images::thumbImage($originalPath . '.jpg', WWW_ROOT . 'images/' . date('M-Y') . '/' . basename($filePath) . '.thumb.jpg');
 
-            $user->set('avatar', WWW_ROOT . 'images/' . date('M-Y') . '/' . basename($filePath));
+            $user->set('avatar', '/images/' . date('M-Y') . '/' . basename($filePath));
         }
 
         if($this->request->getData('enable_2fa') == '')
@@ -170,7 +173,7 @@ class SettingsController extends AppController
     public function save2fa()
     {
         $this->loadModel('Users');
-        $user = $this->Users->find('all')->where(['id' => $this->Auth->user('id')])->first();
+        $user = Users::getUser($this->Auth->user('id'));
 
         $challenge_response = $user->get('challenge_response');
 
@@ -186,7 +189,7 @@ class SettingsController extends AppController
     public function display2fa()
     {
         $this->loadModel('Users');
-        $user = $this->Users->find('all')->where(['id' => $this->Auth->user('id')])->first();
+        $user = Users::getUser($this->Auth->user('id'));
 
         $this->loadComponent('Cookie');
 
@@ -212,7 +215,7 @@ class SettingsController extends AppController
     public function login2fa()
     {
         $this->loadModel('Users');
-        $user = $this->Users->find('all')->where(['id' => $this->Auth->user('id')])->first();
+        $user = Users::getUser($this->Auth->user('id'));
 
         $challenge_response = $user->get('challenge_response');
 

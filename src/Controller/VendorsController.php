@@ -2,6 +2,13 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\Utility\Wallet;
+use App\Utility\Settings;
+use App\Utility\Crypto;
+use App\Utility\Users;
+use App\Utility\Currency;
+use App\Utility\Invites;
+use App\Utility\Vendors;
 
 /**
  * Vendors Controller
@@ -12,6 +19,93 @@ use App\Controller\AppController;
  */
 class VendorsController extends AppController
 {
+    public function upgrade()
+    {
+        $balances = Wallet::getWalletBalance($this->Auth->user('id'));
+        $totalBalance = $balances[0];
+
+        $totalCost = Settings::getVendorDepositAmount();
+
+        if($totalBalance > $totalCost) {
+
+            $this->set('balance', 'high');
+
+            $missingBalance = 0;
+            $status = 1;
+        }
+        else {
+            $missingBalance = $totalCost - $totalBalance;
+
+            $status = 0;
+
+            $this->set('balance', 'low');
+            $this->set('missingBalance', $missingBalance);
+        }
+
+        $user = Users::getUser($this->Auth->user('id'));
+
+        if($user->get('pgp') != '') {
+
+            $randomString = Crypto::getRandom();
+            $challenge = Crypto::encryptMessage($randomString, $user->get('pgp'));
+
+            $user->set('vendor_challenge', $challenge);
+            $user->set('vendor_challenge_response', $randomString);
+
+            $this->loadModel('Users');
+            $this->Users->save($user);
+
+            $this->set('no_pgp', false);
+            $this->set('challenge', $challenge);
+        }
+        else {
+
+            $this->set('no_pgp', true);
+        }
+    }
+
+    public function saveUpgrade()
+    {
+        $user = Users::getUser($this->Auth->user('id'));
+
+        $challenge_response = $user->get('vendor_challenge_response');
+
+        if($challenge_response != '' && $this->request->getData('pgp_challenge_response') == $challenge_response)
+        {
+            $this->loadModel('Users');
+
+            $user->set('role', 'vendor');
+            $this->Users->save($user);
+
+            $this->loadModel('Vendors');
+            $vendor = $this->Vendors->newEntity([
+                'user_id' => $this->Auth->user('id'),
+                'title' => $this->Auth->user('username'),
+                'tos' => '# Terms Of Service',
+                'created' => new \DateTime('now'),
+                'modified' => new \DateTime('now')
+            ]);
+            $this->Vendors->save($vendor);
+
+            $litecoin = new \App\Utility\Litecoin();
+
+            $totalCost = Currency::Convert('usd', Settings::getVendorDepositAmount(), 'cmc');
+
+            $superadmin_invite_id = Invites::getSuperAdminInviteID();
+            $superadmin_user_id = Invites::getUserIDByInviteID($superadmin_invite_id);
+            Invites::upgradeToVendor($user, Vendors::getVendorID($user->get('id')));
+
+            $litecoin->moveFromAccountToAccount($user->get('id'), $superadmin_user_id, $totalCost);
+
+            $this->Flash->success('You have successfully upgraded to vendor, please log back in.');
+
+            return $this->redirect('/logout');
+        }
+        else {
+
+            return $this->redirect($this->referer());
+        }
+    }
 
     /**
      * Index method

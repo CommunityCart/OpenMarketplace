@@ -2,10 +2,22 @@
 <section class="content-header">
   <h1>
     Products
-    <div class="pull-right"><?= $this->Html->link(__('New'), ['action' => 'add'], ['class'=>'btn btn-success btn-xs']) ?></div>
+    <?php if($shippingOptionsCount == 0) { ?>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="box">
+          <div class="box-header">
+            <h4 style="display:inline-block;"><b>No Shipping Options Found: </b>You must create your shipping options before your products.</h4>&nbsp;<a href="/settings/shipping" class="btn btn-success" style="float:right;">Click Here to Create Shipping Options</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <?php } else { ?>
+    <div class="pull-right"><?= $this->Html->link(__('New'), ['action' => 'add'], ['class'=>'btn btn-success btn-lg btn-block']) ?></div>
+    <?php } ?>
   </h1>
 </section>
-
+<br/>
 <!-- Main content -->
 <section class="content">
   <div class="row">
@@ -40,11 +52,15 @@
             <tbody>
             <?php foreach ($products as $product): ?>
               <tr>
-                <td><?= $this->Html->image(str_replace(WWW_ROOT, '/', $product->product_images[0]->image_thumbnail)); ?></td>
-                <td><?= h($product->title) ?></td>
+                <?php if(count($product->product_images) > 0 && file_exists(WWW_ROOT . $product->product_images[0]->image_thumbnail)) { ?>
+                <td><?= $this->Html->image($product->product_images[0]->image_thumbnail); ?></td>
+                <?php } else { ?>
+                <td><?= $this->Html->image('/img/product.png', ['width' => '150px']) ?></td>
+                <?php } ?>
+                <td style="width:100%"><?= h($product->title) ?></td>
                 <td><?= $this->Number->format($product->cost) ?></td>
-                <td><?= $product->product_category->category_name ?></td>
-                <td><?= $product->country->name ?></td>
+                <td nowrap="true"><?= $product->product_category->category_name ?></td>
+                <td nowrap="true"><?= $product->country->name ?></td>
                 <td class="actions" style="white-space:nowrap">
                   <?= $this->Html->link(__('View'), ['action' => 'view', $product->id], ['class'=>'btn btn-info btn-xs']) ?>
                   <?= $this->Html->link(__('Edit'), ['action' => 'edit', $product->id], ['class'=>'btn btn-warning btn-xs']) ?>

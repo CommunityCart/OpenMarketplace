@@ -77,7 +77,7 @@ bold, **asterisks**
                                 <?php if($user->avatar != '') { ?>
                                 <img class="profile-user-img img-responsive img-circle" src="<?= str_replace(WWW_ROOT, '/', $user->avatar . '.thumb.jpg') ?>" alt="User profile picture">
                                 <?php } else { ?>
-                                <img class="profile-user-img img-responsive img-circle" src="/img/avatar.jpg" alt="User profile picture">
+                                <img class="profile-user-img img-responsive img-circle" src="/img/avatar.png" alt="User profile picture">
                                 <?php } ?>
                             </div>
                             <div class="col-md-7">
@@ -127,7 +127,7 @@ bold, **asterisks**
                     <?= $this->Form->unlockField('enable_2fa'); ?>
                     <?= $this->Form->end() ?>
                 </div>
-                <?php } else if($settings == 'vendor') { ?>
+                <?php } else if($role == 'vendor' && $settings == 'vendor') { ?>
                 <div class="box-body">
                     <?= $this->Form->create(null, ['url' => '/saveVendorSettings']) ?>
                     <div class="row">

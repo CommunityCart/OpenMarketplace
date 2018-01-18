@@ -8,6 +8,11 @@ use Cake\Core\Configure;
 // TODO: Settings Placeholders converted to actual code
 class Settings
 {
+    public static function getVendorDepositAmount()
+    {
+        return 0.05;
+    }
+
     public static function getVendorCommission()
     {
         return 1;

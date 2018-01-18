@@ -10,6 +10,8 @@ use App\Utility\Images;
  *
  * @method \App\Model\Entity\ProductImage[] paginate($object = null, array $settings = [])
  */
+// TODO: Get Product Placeholder Image From Shutterstock trial
+// TODO: Get Avatar Placeholder Image From Shutterstock trial
 class ProductImagesController extends AppController
 {
     /**
@@ -26,20 +28,29 @@ class ProductImagesController extends AppController
             $fileArray = $this->request->getData('upload');
             $filePath = $fileArray['tmp_name'];
 
-            if(file_exists(WWW_ROOT . '/images/' . date('M-Y')) == false) {
+            if (file_exists(WWW_ROOT . '/images/' . date('M-Y')) == false) {
                 mkdir(WWW_ROOT . '/images/' . date('M-Y'));
             }
 
-            Images::resizeImage($filePath, WWW_ROOT . 'images/' . date('M-Y') . '/' . basename($filePath) . '.display.jpg');
-            Images::thumbImage($filePath, WWW_ROOT . 'images/' . date('M-Y') . '/' . basename($filePath) . '.thumb.jpg');
+            $fileExtArray = explode('.', $fileArray['name']);
+            $ext = end($fileExtArray);
 
-            move_uploaded_file($filePath, WWW_ROOT . 'images/' . date('M-Y') . '/' . basename($filePath));
+            $originalPath = WWW_ROOT . 'images/' . date('M-Y') . '/' . basename($filePath) . '.original.' . $ext;
+
+            move_uploaded_file($filePath, $originalPath);
+
+            Images::convertImage($originalPath, $originalPath . '.jpg', 80);
+
+            try { unlink($originalPath); } catch(\Exception $ex) { }
+
+            Images::resizeImage($originalPath . '.jpg', WWW_ROOT . 'images/' . date('M-Y') . '/' . basename($filePath) . '.display.jpg');
+            Images::thumbImage($originalPath . '.jpg', WWW_ROOT . 'images/' . date('M-Y') . '/' . basename($filePath) . '.thumb.jpg');
 
             $productImage = $this->ProductImages->newEntity([
                 'product_id' => $id,
-                'image_full' => WWW_ROOT . 'images/' . date('M-Y') . '/' . basename($filePath),
-                'image_display' => WWW_ROOT . 'images/' . date('M-Y') . '/' . basename($filePath) . '.display.jpg',
-                'image_thumbnail' => WWW_ROOT . 'images/' . date('M-Y') . '/' . basename($filePath) . '.thumb.jpg'
+                'image_full' => '/images/' . date('M-Y') . '/' . basename($filePath),
+                'image_display' => '/images/' . date('M-Y') . '/' . basename($filePath) . '.display.jpg',
+                'image_thumbnail' => '/images/' . date('M-Y') . '/' . basename($filePath) . '.thumb.jpg'
             ]);
             if ($this->ProductImages->save($productImage)) {
                 $this->Flash->success(__('The product image has been saved.'));

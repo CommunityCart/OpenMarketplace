@@ -22,11 +22,16 @@ class Crypto
 
     public static function encryptMessage($message, $pgp_key)
     {
-        putenv("GNUPGHOME=/tmp");
+        try {
+            putenv("GNUPGHOME=/tmp");
 
-        $res = gnupg_init();
-        $rtv = gnupg_import($res, $pgp_key);
-        $enc = gnupg_encrypt($res, $message);
+            $res = gnupg_init();
+            $rtv = gnupg_import($res, $pgp_key);
+            $enc = gnupg_encrypt($res, $message);
+        }catch (\Exception $exception)
+        {
+
+        }
 
         return $enc;
     }

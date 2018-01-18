@@ -3,8 +3,25 @@
 namespace App\Utility;
 
 use Cake\ORM\TableRegistry;
+use App\Utility\Tables;
 
 class Currency {
+
+    public static function getCurrencyID($currency)
+    {
+        $currencyTable = Tables::getCurrencyTable();
+
+        $currency = $currencyTable->find('all')->where(['symbol' => $currency])->first();
+
+        if(isset($currency)) {
+
+            return $currency->get('id');
+        }
+        else {
+
+            die('Invalid Currency ID, Currency::getCurrencyID, Line 22');
+        }
+    }
 
     public static function getExchangeTable()
     {

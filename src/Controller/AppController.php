@@ -60,6 +60,15 @@ class AppController extends Controller
 
     public function beforeRender(Event $event)
     {
+        if(!isset($this->Auth) || $this->Auth->user('id') === null) {
+
+            $collapse = $this->getCollapse();
+
+            $this->set('menus', $this->buildMenus($collapse, null));
+
+            return;
+        }
+
         if($this->Auth->user() != null) {
 
             $user = Users::getUser($this->Auth->user('id'));
@@ -132,7 +141,7 @@ class AppController extends Controller
 
             $cacheTimestamp = Cache::read($this->Auth->user('id') . '.wallet_balances', 'memcache');
 
-            if(isset($cacheTimestamp) && $cacheTimestamp != false) {
+            if(isset($cacheTimestamp) && $cacheTimestamp != null && $cacheTimestamp != false) {
 
                 $now = new \DateTime('now');
                 $diff = $now->diff($cacheTimestamp);
@@ -142,24 +151,28 @@ class AppController extends Controller
                 $cacheTimestamp = new \DateTime('now');
                 $now = new \DateTime('now');
                 $diff = $now->diff($cacheTimestamp);
+
+                Cache::write($this->Auth->user('id') . '.wallet_balances', new \DateTime('now'), 'memcache');
             }
 
-            if($cacheTimestamp == '' || (($diff->i * 60) + $diff->s) > 300) {
+            if((($diff->i * 60) + $diff->s) > 150) {
 
                 foreach ($wallets as $wallet) {
 
                     $response = $litecoin->checkAddressForDeposit($wallet->get('address'));
 
-                    $wallet->set('wallet_balance', number_format($response, 8));
+                    if($wallet->get('wallet_balance') != number_format($response, 8)) {
 
-                    $this->Wallets->save($wallet);
+                        $wallet->set('wallet_balance', number_format($response, 8));
+                        $this->Wallets->save($wallet);
+                    }
                 }
 
                 Cache::write($this->Auth->user('id') . '.wallet_balances', new \DateTime('now'), 'memcache');
             }
             else {
 
-                // return;
+                //return;
             }
         }
 
@@ -190,11 +203,9 @@ class AppController extends Controller
         foreach($accountTransactions as $accountTransaction) {
 
             if(isset($accountTransaction['address'])) {
-
                 $wallet = $this->Wallets->find('all')->where(['address' => $accountTransaction['address']])->first();
             }
             else {
-
                 $wallet = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
             }
 
@@ -276,7 +287,7 @@ class AppController extends Controller
             }
             else {
 
-                if(isset($accountTransaction['confirmations']) && $walletTransaction->get('confirmations') < 10) {
+                if(isset($accountTransaction['confirmations']) && $walletTransaction->get('confirmations') < 7) {
 
                     $walletTransaction->set('confirmations', $accountTransaction['confirmations']);
                     $this->WalletTransactions->save($walletTransaction);

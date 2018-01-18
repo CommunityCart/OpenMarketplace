@@ -29,7 +29,11 @@
                 <!-- /.box-header -->
                 <div class="box-body table-responsive no-padding">
                     <div class="col-md-12">
-                    <center><a href="/products/view/<?php echo $product->product->id; ?>"><?= $this->Html->image(str_replace(WWW_ROOT, '/', $product->product->product_images[0]->image_thumbnail)); ?></a></center>
+                        <?php if(count($product->product->product_images) > 0 && file_exists(WWW_ROOT . $product->product->product_images[0]->image_thumbnail)) { ?>
+                            <center><a href="/products/view/<?php echo $product->product->id; ?>"><?= $this->Html->image($product->product->product_images[0]->image_thumbnail, ['width' => '150px']); ?></a></center>
+                        <?php } else { ?>
+                            <center><a href="/products/view/<?php echo $product->product->id; ?>"><img src="/img/avatar.png" width="150px" /></a></center>
+                        <?php } ?>
                     </div>
                 </div>
                 <!-- /.box-body -->
