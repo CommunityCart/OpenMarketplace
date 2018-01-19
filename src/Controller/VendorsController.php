@@ -9,6 +9,7 @@ use App\Utility\Users;
 use App\Utility\Currency;
 use App\Utility\Invites;
 use App\Utility\Vendors;
+use App\Utility\Tables;
 
 /**
  * Vendors Controller
@@ -17,6 +18,7 @@ use App\Utility\Vendors;
  *
  * @method \App\Model\Entity\Vendor[] paginate($object = null, array $settings = [])
  */
+//TODO: Set Last Active For Vendor In AppController
 class VendorsController extends AppController
 {
     public function upgrade()
@@ -108,22 +110,6 @@ class VendorsController extends AppController
     }
 
     /**
-     * Index method
-     *
-     * @return \Cake\Http\Response|void
-     */
-    public function index()
-    {
-        $this->paginate = [
-            'contain' => ['Users']
-        ];
-        $vendors = $this->paginate($this->Vendors);
-
-        $this->set(compact('vendors'));
-        $this->set('_serialize', ['vendors']);
-    }
-
-    /**
      * View method
      *
      * @param string|null $id Vendor id.
@@ -133,58 +119,59 @@ class VendorsController extends AppController
     public function view($id = null)
     {
         $vendor = $this->Vendors->get($id, [
-            'contain' => ['Users', 'Messages', 'Products']
-        ]);
-
-        $this->set('vendor', $vendor);
-        $this->set('_serialize', ['vendor']);
-    }
-
-    /**
-     * Add method
-     *
-     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
-     */
-    public function add()
-    {
-        $vendor = $this->Vendors->newEntity();
-        if ($this->request->is('post')) {
-            $vendor = $this->Vendors->patchEntity($vendor, $this->request->getData());
-            if ($this->Vendors->save($vendor)) {
-                $this->Flash->success(__('The vendor has been saved.'));
-
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('The vendor could not be saved. Please, try again.'));
-        }
-        $users = $this->Vendors->Users->find('list', ['limit' => 200]);
-        $this->set(compact('vendor', 'users'));
-        $this->set('_serialize', ['vendor']);
-    }
-
-    /**
-     * Edit method
-     *
-     * @param string|null $id Vendor id.
-     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Network\Exception\NotFoundException When record not found.
-     */
-    public function edit($id = null)
-    {
-        $vendor = $this->Vendors->get($id, [
             'contain' => []
         ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $vendor = $this->Vendors->patchEntity($vendor, $this->request->getData());
-            if ($this->Vendors->save($vendor)) {
-                $this->Flash->success(__('The vendor has been saved.'));
 
-                return $this->redirect(['action' => 'index']);
+        $ordersTable = Tables::getOrdersTable();
+        $orders = $ordersTable->find('all');
+
+        $productsTable = Tables::getProductsTable();
+        $products = $productsTable->find('all', ['contain' => ['Vendors', 'Countries', 'Vendors.Users', 'ProductCategories']])->where(['vendor_id' => $vendor->get('id')])->all();
+
+        if(isset($products) && count($products) > 0) {
+
+            foreach ($products as $product) {
+
+                $orders->orWhere(['product_id' => $product->get('id')]);
             }
-            $this->Flash->error(__('The vendor could not be saved. Please, try again.'));
+
+            $orders = $orders->all();
         }
-        $users = $this->Vendors->Users->find('list', ['limit' => 200]);
-        $this->set(compact('vendor', 'users'));
+
+        $reviewsTable = Tables::getReviewsTable();
+
+        $reviews = $reviewsTable->find('all');
+
+        if(isset($orders) && count($orders) > 0) {
+
+            foreach($orders as $order) {
+
+                $reviews->orWhere(['order_id' => $order->get('id')]);
+            }
+
+            $reviews = $reviews->orderDesc('created')->limit(20)->all();
+
+            $this->set('reviews', $reviews);
+        }
+        else {
+
+            $this->set('reviews', array());
+        }
+
+        $user = Users::getOtherUserByID($vendor->get('user_id'));
+
+        if(isset($products) && count($products) > 0) {
+
+            $this->set('products', $products);
+        }
+        else {
+
+            $this->set('products', array());
+        }
+
+        $this->set('ordersCount', count($orders));
+        $this->set('user', $user);
+        $this->set('vendor', $vendor);
         $this->set('_serialize', ['vendor']);
     }
 

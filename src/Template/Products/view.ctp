@@ -53,7 +53,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <span><a href="/vendor/<?= $product->vendor->id ?>"><?= $product->vendor->user->username ?></a>&nbsp;&nbsp;(<?= $vendorOrderCount ?>) (<?= $vendorRating ?> Stars)</span>
+                                        <span><a href="/vendor/<?= $product->vendor->id ?>"><?= h($product->vendor->title) ?></a>&nbsp;&nbsp;(<?= $vendorOrderCount ?>) (<?= $vendorRating ?> Stars)</span>
                                     </div>
                                 </div>
                                 <hr/>
@@ -109,7 +109,7 @@
                                             <div class="form-group">
                                                 <select class="form-control" name="shipping_options">
                                                     <?php foreach($product->vendor->shipping_options as $shippingOption) { ?>
-                                                    <option value="<?= $shippingOption->id ?>"><?= $shippingOption->shipping_carrier . ' - ' . $shippingOption->shipping_name . ' - ' . $shippingOption->shipping_cost  ?></option>
+                                                    <option value="<?= $shippingOption->id ?>"><?= h($shippingOption->shipping_carrier) . ' - ' . h($shippingOption->shipping_name) . ' - ' . h($shippingOption->shipping_cost)  ?></option>
                                                     <?php } ?>
                                                 </select>
                                             </div>
@@ -183,7 +183,7 @@
                             <?php for($y = $x; $y < 5; $y++) { ?>
                             <span class="fa fa-star"></span>
                             <?php } ?></td>
-                        <td><?= $review->comment ?></td>
+                        <td><?= h($review->comment) ?></td>
                         <td><?= $review->created ?></td>
                     </tr>
                 <?php } ?>

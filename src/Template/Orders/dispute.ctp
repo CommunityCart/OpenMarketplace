@@ -57,7 +57,7 @@
                         <div class="col-md-6">
                             <div class="row">
                                 <div class="col-md-12">
-                                    <h4><?= $product->title ?></h4>
+                                    <h4><?= h($product->title) ?></h4>
                                 </div>
                             </div>
                             <hr/>
@@ -65,7 +65,7 @@
                                 <div class="col-md-6">
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <h4>Vendor: <b><?= $vendor_user->username ?></b></h4>
+                                            <h4>Vendor: <b><?= h($vendor_user->username) ?></b></h4>
                                         </div>
                                     </div>
                                     <div class="row">
@@ -87,17 +87,17 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <h4>Product Cost: <b><?= $product->cost ?></b></h4>
+                                            <h4>Product Cost: <b><?= h($product->cost) ?></b></h4>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <h4>Shipping Option: <b><?= $shipping->shipping_name ?></b></h4>
+                                            <h4>Shipping Option: <b><?= h($shipping->shipping_name) ?></b></h4>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <h4>Shipping Cost: <b><?= $shipping->shipping_cost ?></b></h4>
+                                            <h4>Shipping Cost: <b><?= h($shipping->shipping_cost) ?></b></h4>
                                         </div>
                                     </div>
                                 </div>

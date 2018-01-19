@@ -5,3 +5,10 @@
 .dropdown:hover .dropdown-menu {
     display: block !important;
 }
+
+.profile-user-img-big {
+    margin: 0 auto;
+    width: 250px;
+    padding: 3px;
+    border: 3px solid #d2d6de;
+}

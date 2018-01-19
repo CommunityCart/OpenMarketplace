@@ -2,10 +2,10 @@
 <section class="content-header">
   <h1>
     Shipping Options
-    <div class="pull-right"><?= $this->Html->link(__('New'), ['action' => 'add'], ['class'=>'btn btn-success btn-xs']) ?></div>
+    <div class="pull-right"><?= $this->Html->link(__('New'), ['action' => 'add'], ['class'=>'btn btn-success btn-lg']) ?></div>
   </h1>
 </section>
-
+<br/>
 <!-- Main content -->
 <section class="content">
   <div class="row">

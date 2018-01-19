@@ -202,9 +202,11 @@
                     </li>
                     <!-- Menu Footer-->
                     <li class="user-footer">
+                        <?php if($currentUser->get('role') == 'vendor') { ?>
                         <div class="pull-left">
-                            <a href="/profile" class="btn btn-default btn-flat">Profile</a>
+                            <a href="/vendor/<?= $currentVendor->get('id') ?>" class="btn btn-default btn-flat">Profile</a>
                         </div>
+                        <?php } ?>
                         <div class="pull-right">
                             <a href="/logout" class="btn btn-default btn-flat">Logout</a>
                         </div>

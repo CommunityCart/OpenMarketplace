@@ -88,7 +88,7 @@ class SettingsController extends AppController
         return $this->redirect($this->referer());
     }
 
-    // TODO: Check Product Image Upload For PHP Execution
+
     public function saveUserSettings()
     {
         $this->loadModel('Users');

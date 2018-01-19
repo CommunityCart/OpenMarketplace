@@ -99,7 +99,7 @@ class ShippingOptionsController extends AppController
             }
             $this->Flash->error(__('The shipping option could not be saved. Please, try again.'));
         }
-        $vendors = $this->ShippingOptions->Vendors->find('list', ['limit' => 200]);
+        $vendors = $this->ShippingOptions->Vendors->find('list')->where(['id' => $vendor_id])->first();
         $this->set(compact('shippingOption', 'vendors'));
         $this->set('_serialize', ['shippingOption']);
     }

@@ -65,7 +65,7 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <span><a href="/vendor/<?= $product->vendor->id ?>"><?= $product->vendor->user->username ?></a>&nbsp;&nbsp;(<?= $vendorOrderCount ?>) (<?= $vendorRating ?> Stars)</span>
+                                            <span><a href="/vendor/<?= $product->vendor->id ?>"><?= h($product->vendor->title) ?></a>&nbsp;&nbsp;(<?= $vendorOrderCount ?>) (<?= $vendorRating ?> Stars)</span>
                                         </div>
                                     </div>
                                     <hr/>
@@ -125,7 +125,7 @@
                                     <br/>
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <span><?= $dispute->comment ?></span>
+                                            <span><?= h($dispute->comment) ?></span>
                                         </div>
                                     </div>
                                     <?php if($userIsVendor == true) { ?>
@@ -152,15 +152,15 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6">
-                                           <?= $shipping_options->shipping_carrier . ' - ' . $shipping_options->shipping_name ?>
+                                           <?= h($shipping_options->shipping_carrier) . ' - ' . h($shipping_options->shipping_name) ?>
                                         </div>
                                         <div class="col-md-6 pull-right">
-                                            <?= $shipping_options->shipping_cost ?>
+                                            <?= h($shipping_options->shipping_cost) ?>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6">
-                                           <?= 'Quantity of ' . $order->quantity ?> x <?= $product->cost ?>
+                                           <?= 'Quantity of ' . $order->quantity ?> x <?= h($product->cost) ?>
                                         </div>
                                         <div class="col-md-6 pull-right">
                                             <?= $order->quantity * $product->cost ?>
@@ -336,7 +336,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <center><span>Enter Your Shipping Details Below</span></center>
-                                    <textarea style="width:100%;" rows="4" name="shipping_details" required><?php if(isset($order->shipping_details) && $order->shipping_details != '') { ?><?= $order->shipping_details ?><?php } ?></textarea>
+                                    <textarea style="width:100%;" rows="4" name="shipping_details" required><?php if(isset($order->shipping_details) && $order->shipping_details != '') { ?><?= h($order->shipping_details) ?><?php } ?></textarea>
                                     <center><input type="checkbox" name="encrypt_shipping" id="encrypt_shipping" /><label for="encrypt_shipping">&nbsp;Encrypt Shipping Details</label></center>
                                 </div>
                             </div>
@@ -416,7 +416,7 @@
         </div>
         <div class="row">
             <div class="col-md-6">
-                <pre><?php $parser = new \cebe\markdown\Markdown(); echo $parser->parse($order->product->vendor->user->pgp); ?></pre>
+                <pre><?= h($order->product->vendor->user->pgp); ?></pre>
             </div>
             <div class="col-md-6">
                 <div class="box box-solid">
@@ -442,7 +442,7 @@
                                     <?php for($y = $x; $y < 5; $y++) { ?>
                                     <span class="fa fa-star"></span>
                                     <?php } ?></td>
-                                <td><?= $review->comment ?></td>
+                                <td><?= h($review->comment) ?></td>
                                 <td><?= $review->created ?></td>
                             </tr>
                             <?php } ?>

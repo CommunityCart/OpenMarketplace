@@ -27,6 +27,7 @@ use App\Utility\Users;
  *
  * @link https://book.cakephp.org/3.0/en/controllers.html#the-app-controller
  */
+// TODO: Remove with regex html and javascript tags from $vendor->tos when being added/saved
 class AppController extends Controller
 {
 

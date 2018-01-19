@@ -53,7 +53,7 @@ use App\Utility\Dates;
               <tr>
                 <td><input type="checkbox" name="checkie[]" value="<?= $message->id ?>" <?php if($checkAll == true) { ?>checked<?php } ?>></td>
                 <?php if($role == 'vendor') { ?>
-                  <td nowrap="true" class="mailbox-name"><?= $message->user->username ?></td>
+                  <td nowrap="true" class="mailbox-name"><?= h($message->user->username) ?></td>
                   <?php if($message->vendor_read == 0) { ?>
                     <td><span class="label label-success pull-right">UNREAD</span></td>
                   <?php } else { ?>
@@ -67,7 +67,7 @@ use App\Utility\Dates;
                     <td><span class="label label-primary pull-right">READ</span></td>
                   <?php } ?>
                 <?php } ?>
-                <td class="mailbox-subject" style="width:100%"><?= $this->Html->link(__($message->title), ['action' => 'view', $message->id], ['target' => '_blank']) ?></td>
+                <td class="mailbox-subject" style="width:100%"><?= $this->Html->link($message->title, ['action' => 'view', $message->id], ['target' => '_blank']) ?></td>
                 <td class="mailbox-date" style="white-space: nowrap;"><?= Dates::getLapsedTime($message->created) ?></td>
                 <td class="actions" style="white-space:nowrap">
                   <?= $this->Html->link(__('View'), ['action' => 'view', $message->id], ['class'=>'btn btn-info btn-xs', 'target' => '_blank']) ?>

@@ -10,8 +10,7 @@ use App\Utility\Images;
  *
  * @method \App\Model\Entity\ProductImage[] paginate($object = null, array $settings = [])
  */
-// TODO: Get Product Placeholder Image From Shutterstock trial
-// TODO: Get Avatar Placeholder Image From Shutterstock trial
+
 class ProductImagesController extends AppController
 {
     /**

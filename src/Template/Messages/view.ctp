@@ -40,16 +40,16 @@
                             <?php foreach($message->message_messages as $message_message) { ?>
                             <div class="mailbox-read-info">
                                 <?php if($message_message->from_user == 1) { ?>
-                                <h5>From: <?= $message->user->username ?>
+                                <h5>From: <?= h($message->user->username) ?>
                                     <span class="mailbox-read-time pull-right"><?= $message_message->created ?></span></h5>
                                 <?php } else { ?>
-                                <h5>From: <?= $message->vendor->title ?>
+                                <h5>From: <?= h($message->vendor->title) ?>
                                     <span class="mailbox-read-time pull-right"><?= $message_message->created ?></span></h5>
                                 <?php } ?>
                             </div>
                             <!-- /.mailbox-controls -->
                             <div class="mailbox-read-message">
-                                <p><?= $message_message->body ?></p>
+                                <p><?= h($message_message->body) ?></p>
                             </div>
 
                             <?php } ?>
@@ -91,14 +91,14 @@
             <div class="box box-primary">
                 <div class="box-header with-border">
                     <?php if($username == $message->user->username) { ?>
-                    <h4><?= $message->vendor->title ?> PGP Key</h4>
+                    <h4><?= h($message->vendor->title) ?> PGP Key</h4>
                     <?php } else { ?>
-                    <h4><?= $message->user->username ?> PGP Key</h4>
+                    <h4><?= h($message->user->username) ?> PGP Key</h4>
                     <?php } ?>
                 </div>
                 <!-- /.box-header -->
                 <div class="box-body">
-                    <pre><?php if($username == $message->user->username) { echo $vendor_pgp; } else { echo $message->user->pgp; } ?></pre>
+                    <pre><?php if($username == $message->user->username) { echo h($vendor_pgp); } else { echo h($message->user->pgp); } ?></pre>
                 </div>
             </div>
         </div>

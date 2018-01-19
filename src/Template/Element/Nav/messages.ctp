@@ -18,10 +18,10 @@
                             <?php echo $this->Html->image($navMessage['avatar'] . '.thumb.jpg', array('class' => 'img-circle', 'alt' => 'User Image')); ?>
                         </div>
                         <h4>
-                            <?= $navMessage['username'] ?>
+                            <?= h($navMessage['username']) ?>
                             <small><i class="fa fa-clock-o"></i> <?= $navMessage['lapsed'] ?></small>
                         </h4>
-                        <p><?= $navMessage['subject'] ?></p>
+                        <p><?= h($navMessage['subject']) ?></p>
                     </a>
                 </li>
                 <?php } ?>

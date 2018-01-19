@@ -59,8 +59,8 @@
                 <?php } ?>
                 <td style="width:100%"><?= h($product->title) ?></td>
                 <td><?= $this->Number->format($product->cost) ?></td>
-                <td nowrap="true"><?= $product->product_category->category_name ?></td>
-                <td nowrap="true"><?= $product->country->name ?></td>
+                <td nowrap="true"><?= h($product->product_category->category_name) ?></td>
+                <td nowrap="true"><?= h($product->country->name) ?></td>
                 <td class="actions" style="white-space:nowrap">
                   <?= $this->Html->link(__('View'), ['action' => 'view', $product->id], ['class'=>'btn btn-info btn-xs']) ?>
                   <?= $this->Html->link(__('Edit'), ['action' => 'edit', $product->id], ['class'=>'btn btn-warning btn-xs']) ?>

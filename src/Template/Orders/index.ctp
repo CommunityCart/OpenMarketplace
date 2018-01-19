@@ -40,7 +40,7 @@
                 <td><input type="checkbox" name="bulk[]" value="<?= $order->id ?>" /></td>
                 <?php } ?>
                 <?php if($title != 'Shopping Cart') { ?>
-                <td><?= $order->user->username ?></td>
+                <td><?= h($order->user->username) ?></td>
                 <?php } ?>
                 <td><?= $order->has('product') ? $this->Html->link($order->product->title, ['controller' => 'Products', 'action' => 'view', $order->product->id]) : '' ?></td>
                 <td><?= $order->quantity ?></td>

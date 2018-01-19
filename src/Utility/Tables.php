@@ -70,6 +70,13 @@ class Tables
         return $Table;
     }
 
+    public static function getReviewsTable()
+    {
+        $Table = TableRegistry::get('reviews');
+
+        return $Table;
+    }
+
     public static function getMessagesTable()
     {
         $Table = TableRegistry::get('messages');

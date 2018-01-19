@@ -19,13 +19,13 @@
                                 <input type="checkbox" name="bulk[]" value="<?= $order->id ?>" />
                             </div>
                             <div class="col-md-6">
-                                <h3><?= $order->product->title ?></h3>
+                                <h3><?= h($order->product->title) ?></h3>
                             </div>
                             <div class="col-md-2">
                                 <h4>Quantity: <?= $order->quantity ?></h4>
                             </div>
                             <div class="col-md-3">
-                                <h4><?= $order->shipping_option->shipping_name ?></h4>
+                                <h4><?= h($order->shipping_option->shipping_name) ?></h4>
                             </div>
                         </div>
                     </div>
@@ -34,12 +34,12 @@
                             <div class="col-md-12">
                                 <div class="row">
                                     <div class="col-md-6 col-md-offset-1">
-                                        <textarea style="width:100%;" rows="6"><?= $order->shipping_details ?></textarea>
+                                        <textarea style="width:100%;" rows="6"><?= h($order->shipping_details) ?></textarea>
                                     </div>
                                     <div class="col-md-5">
                                         <div class="row">
                                             <div class="col-md-5">
-                                                <h4><?= $order->user->username ?></h4>
+                                                <h4><?= h($order->user->username) ?></h4>
                                             </div>
                                             <div class="col-md-6">
                                                 <?php if($order->finalize_early == 1) { ?>
