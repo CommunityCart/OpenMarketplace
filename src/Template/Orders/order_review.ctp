@@ -34,7 +34,7 @@
                                     <?php if(count($product->product_images) > $image_index && file_exists(WWW_ROOT . $product->product_images[$image_index]->image_display)) { ?>
                                     <img src="<?= $product->product_images[$image_index]->image_display ?>" width="600px" ?>
                                     <?php } else { ?>
-                                    <img src="/img/avatar.png" width="600px" />
+                                    <img src="/img/product.png" width="600px" />
                                     <?php } ?>
                                 </div>
                             </div>
@@ -258,7 +258,7 @@
                             </div>
                             <?php } ?>
 
-                            <?php if($order->status >= 5) { ?>
+                            <?php if($order->status >= 5 && $userIsVendor == false) { ?>
 
                             <?= $this->Form->create('null', ['url' => '/rate/' . $order->id]); ?>
                             <div class="row">

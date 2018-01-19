@@ -20,10 +20,6 @@ class Authorization
 
     public function __invoke($request, $response, $next)
     {
-        // Check to see if user has 2fa enabled
-        // -> Check to see if 2fa cookie == 1
-        // -> else redirect to /display2fa
-
         $usersTable = Tables::getUsersTable();
 
         $user_id = $request->session()->read('Auth.User.id');

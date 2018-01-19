@@ -34,6 +34,15 @@ class Users
         return self::$user;
     }
 
+    public static function getOtherUserByID($user_id)
+    {
+        $usersTable = self::getUserTable();
+
+        $user = $usersTable->find('all')->where(['id' => $user_id])->first();
+
+        return $user;
+    }
+
     public static function getUserTable()
     {
         $usersTable = TableRegistry::get(Configure::read('Users.table'));

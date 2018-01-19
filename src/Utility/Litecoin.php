@@ -109,7 +109,7 @@ class Litecoin
             'balance' => '-' . $amount,
             'created' => new \DateTime('now'),
             'transaction_time' => $details['time'],
-            'confirmations' => 0
+            'confirmations' => 11
         ]);
         $walletTransactionTable->save($transaction);
 
@@ -125,7 +125,7 @@ class Litecoin
             'balance' => $amount,
             'created' => new \DateTime('now'),
             'transaction_time' => $details['time'],
-            'confirmations' => 0
+            'confirmations' => 11
         ]);
         $walletTransactionTable->save($transaction);
 

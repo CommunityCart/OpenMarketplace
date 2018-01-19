@@ -43,18 +43,20 @@ class WalletsController extends AppController
             }
         }
 
-        $wallets = Wallet::getWalletByUserID($this->Auth->user('id'));
+        $wallets = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')]);
 
-        $walletTransactions = $this->WalletTransactions->find('all');
+        if(isset($wallets)) {
 
-        foreach($wallets as $wallet)
-        {
-            $walletTransactions = $walletTransactions->orWhere(['wallet_id' => $wallet->get('id')]);
+            $walletTransactions = $this->WalletTransactions->find('all');
 
-            $currentWallet = $wallet;
+            foreach ($wallets as $wallet) {
+                $walletTransactions = $walletTransactions->orWhere(['wallet_id' => $wallet->get('id')]);
+
+                $currentWallet = $wallet;
+            }
+
+            $walletTransactions = $walletTransactions->orderDesc('created')->limit(100)->all();
         }
-
-        $walletTransactions = $walletTransactions->orderDesc('created')->limit(100)->all();
 
         $totalBalanceMinusEscrowFinalized = Wallet::getWalletBalance($this->Auth->user('id'));
 

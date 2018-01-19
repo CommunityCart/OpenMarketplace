@@ -74,6 +74,16 @@ class AppController extends Controller
             $user = Users::getUser($this->Auth->user('id'));
 
             $this->doWallet($user);
+
+            $this->set('totalMessageCount', Messages::getTotalCount($this->Auth->user('id')));
+            $this->set('navMessagesArray', Messages::getNavMessages($this->Auth->user('id'), $this->Auth->user('role')));
+
+            if($this->Auth->user('role') == 'vendor') {
+
+                $vendor = Vendors::getVendor(Vendors::getVendorID($this->Auth->user('id')));
+
+                $this->set('currentVendor', $vendor);
+            }
         }
         else {
 
@@ -172,7 +182,7 @@ class AppController extends Controller
             }
             else {
 
-                //return;
+                return;
             }
         }
 

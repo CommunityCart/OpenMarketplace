@@ -100,4 +100,18 @@ class Vendors
 
         return $vendor->get('user_id');
     }
+
+    public static function isUserVendor($user_id)
+    {
+        $vendor = self::getVendor(self::getVendorID($user_id));
+
+        if(isset($vendor)) {
+
+            return $vendor;
+        }
+        else {
+
+            return false;
+        }
+    }
 }

@@ -33,7 +33,29 @@ class OrdersController extends AppController
         $this->loadModel('Vendors');
         $this->loadModel('Disputes');
 
-        $order = $this->Orders->find('all', ['contain' => ['Reviews', 'Products', 'Products.Vendors', 'Products.Vendors.Users']])->where(['Orders.id' => $id, 'Orders.user_id' => $this->Auth->user('id')])->first();
+        $order = $this->Orders->find('all', ['contain' => ['Reviews', 'Products', 'Products.Vendors', 'Products.Vendors.Users']])->where(['Orders.id' => $id])->first();
+
+        if($this->Auth->user('role') == 'vendor') {
+
+            $vendorId = Vendors::getVendorID($this->Auth->user('id'));
+        }
+
+        if($order != null) {
+
+            $product = $this->Products->find('all')->where(['id' => $order->get('product_id')])->first();
+
+            if ($this->Auth->user('id') != $order->get('user_id') && $product != null && $vendorId != $product->get('vendor_id')) {
+                Janitor::hackAttempt();
+            }
+        }
+
+        if($this->Auth->user('role') == 'vendor') {
+
+        }
+        else {
+
+            $order = $this->Orders->find('all', ['contain' => ['Reviews', 'Products', 'Products.Vendors', 'Products.Vendors.Users']])->where(['Orders.id' => $id, 'Orders.user_id' => $this->Auth->user('id')])->first();
+        }
 
         if($idIsProduct == true)
         {
@@ -121,15 +143,18 @@ class OrdersController extends AppController
             $this->set('dispute', $dispute);
         }
 
-        if($this->Auth->user('role') == 'vendor') {
+        if($this->Auth->user('role') == 'vendor' && isset($product) && $vendorId == $product->get('vendor_id')) {
 
             $this->set('userIsVendor', true);
+        }
+        else {
+
+            $this->set('userIsVendor', false);
         }
 
         $this->loadModel('Reviews');
 
         $reviews = $this->Reviews->find('all', ['contain' => ['Orders']])->where(['Orders.product_id' => $productsResult->id])->limit(50)->orderDesc('Reviews.created')->all();
-
 
         $this->set('reviews', $reviews);
         $this->set('totalBalance', $totalBalance);
