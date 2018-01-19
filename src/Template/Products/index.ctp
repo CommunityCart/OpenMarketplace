@@ -55,7 +55,7 @@
                 <?php if(count($product->product_images) > 0 && file_exists(WWW_ROOT . $product->product_images[0]->image_thumbnail)) { ?>
                 <td><?= $this->Html->image($product->product_images[0]->image_thumbnail); ?></td>
                 <?php } else { ?>
-                <td><?= $this->Html->image('/img/product.png', ['width' => '150px']) ?></td>
+                <td><img src="/img/avatar.png" width="150px" /></td>
                 <?php } ?>
                 <td style="width:100%"><?= h($product->title) ?></td>
                 <td><?= $this->Number->format($product->cost) ?></td>

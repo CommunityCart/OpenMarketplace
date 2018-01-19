@@ -453,6 +453,7 @@ class OrdersController extends AppController
         return $this->redirect($this->referer());
     }
 
+    //TODO: Make Site Unusable Until SuperAdmin Logs In
     private function finalizeOrder($order)
     {
         $cacheTimestamp = Cache::read($order->get('id') . '.finalized', 'memcache');
@@ -779,6 +780,8 @@ class OrdersController extends AppController
         $order = $this->Orders->get($id);
 
         $this->amiuser($order);
+
+        MenuCounts::updateVendorViewedIncomingSubtract(Vendors::getVendorIDByOrder($order));
 
         if($order->get('user_id') != $this->Auth->user('id')) {
 

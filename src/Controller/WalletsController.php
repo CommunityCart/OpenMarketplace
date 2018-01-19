@@ -4,6 +4,8 @@ namespace App\Controller;
 use App\Controller\AppController;
 use App\Utility\Users;
 use App\Utility\MenuCounts;
+use App\Utility\Wallet;
+use App\Utility\Currency;
 
 /**
  * Wallets Controller
@@ -41,7 +43,7 @@ class WalletsController extends AppController
             }
         }
 
-        $wallets = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')]);
+        $wallets = Wallet::getWalletByUserID($this->Auth->user('id'));
 
         $walletTransactions = $this->WalletTransactions->find('all');
 
@@ -52,9 +54,9 @@ class WalletsController extends AppController
             $currentWallet = $wallet;
         }
 
-        $walletTransactions = $walletTransactions->orderDesc('transaction_time')->limit(100)->all();
+        $walletTransactions = $walletTransactions->orderDesc('created')->limit(100)->all();
 
-        $totalBalanceMinusEscrowFinalized = \App\Utility\Wallet::getWalletBalance($this->Auth->user('id'));
+        $totalBalanceMinusEscrowFinalized = Wallet::getWalletBalance($this->Auth->user('id'));
 
         $totalBalance = $totalBalanceMinusEscrowFinalized[1];
         $totalUSDBalance = $totalBalanceMinusEscrowFinalized[0];
@@ -63,7 +65,7 @@ class WalletsController extends AppController
 
             $missing = $totalBalance - $total;
             $missing2 = $missing + ($missing * .1);
-            $missing2 = \App\Utility\Currency::Convert('usd', -$missing2, 'cmc');
+            $missing2 = Currency::Convert('usd', -$missing2, 'cmc');
 
             $this->set('missing2', $missing2 . ' CMC');
             $this->set('missing', $missing);
@@ -73,11 +75,11 @@ class WalletsController extends AppController
         $this->set('walletTransactions', $walletTransactions);
         $this->set('role', $user->get('role'));
         if($user->get('role') == 'vendor') {
-            $this->set('orders_escrow', \App\Utility\Wallet::getOrdersEscrowDollars($this->Auth->user('id')));
-            $this->set('orders_escrow_crypto', \App\Utility\Wallet::getOrdersEscrowCrypto($this->Auth->user('id')));
+            $this->set('orders_escrow', Wallet::getOrdersEscrowDollars($this->Auth->user('id')));
+            $this->set('orders_escrow_crypto', Wallet::getOrdersEscrowCrypto($this->Auth->user('id')));
         }
-        $this->set('escrow', \App\Utility\Wallet::getEscrowDollars($this->Auth->user('id')));
-        $this->set('escrow_crypto', \App\Utility\Wallet::getEscrowCrypto($this->Auth->user('id')));
+        $this->set('escrow', Wallet::getEscrowDollars($this->Auth->user('id')));
+        $this->set('escrow_crypto', Wallet::getEscrowCrypto($this->Auth->user('id')));
         $this->set(compact('wallets', 'currentWallet', 'totalBalance', 'totalUSDBalance'));
         $this->set('_serialize', ['wallets']);
     }

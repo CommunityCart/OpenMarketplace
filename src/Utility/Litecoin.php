@@ -6,6 +6,7 @@ use Headzoo\Bitcoin\Wallet\Api\JsonRPC;
 use Headzoo\Bitcoin\Wallet\Api\Wallet;
 use Headzoo\Bitcoin\Wallet\Api\Exceptions\RPCException;
 use Cake\Core\Configure;
+use App\Utility\Wallet as WalletUtility;
 
 class Litecoin
 {
@@ -94,7 +95,41 @@ class Litecoin
 
     public function moveFromAccountToAccount($fromAccount, $toAccount, $amount)
     {
-        return $this->wallet->move($fromAccount, $toAccount, $amount);
+        $details = $this->wallet->move($fromAccount, $toAccount, $amount);
+
+        $fromWallet = WalletUtility::getWalletByUserID($fromAccount);
+
+        MenuCounts::updateUserViewedWallet($fromAccount);
+
+        $walletTransactionTable = Tables::getWalletTransactionTable();
+        $transaction = $walletTransactionTable->newEntity([
+            'wallet_id' => $fromWallet->get('id'),
+            'transaction_hash' => '(send) internal funds transfer',
+            'transaction_details' => $details,
+            'balance' => '-' . $amount,
+            'created' => new \DateTime('now'),
+            'transaction_time' => $details['time'],
+            'confirmations' => 0
+        ]);
+        $walletTransactionTable->save($transaction);
+
+        $toWallet = WalletUtility::getWalletByUserID($toAccount);
+
+        MenuCounts::updateUserViewedWallet($toAccount);
+
+        $walletTransactionTable = Tables::getWalletTransactionTable();
+        $transaction = $walletTransactionTable->newEntity([
+            'wallet_id' => $toWallet->get('id'),
+            'transaction_hash' => '(receive) internal funds transfer',
+            'transaction_details' => $details,
+            'balance' => $amount,
+            'created' => new \DateTime('now'),
+            'transaction_time' => $details['time'],
+            'confirmations' => 0
+        ]);
+        $walletTransactionTable->save($transaction);
+
+        return $details;
     }
 
     /**

@@ -14,6 +14,20 @@ class Tables
         return $Table;
     }
 
+    public static function getWalletTransactionTable()
+    {
+        $Table = TableRegistry::get('wallet_transactions');
+
+        return $Table;
+    }
+
+    public static function getWalletsTable()
+    {
+        $Table = TableRegistry::get('wallets');
+
+        return $Table;
+    }
+
     public static function getInvitesTable()
     {
         $Table = TableRegistry::get('invites');

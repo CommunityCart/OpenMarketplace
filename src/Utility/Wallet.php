@@ -4,6 +4,8 @@ namespace App\Utility;
 
 use Cake\ORM\TableRegistry;
 use App\Utility\Currency;
+use App\Utility\Tables;
+use App\Utility\Litecoin;
 
 class Wallet {
 
@@ -11,37 +13,59 @@ class Wallet {
 
     public static function getWalletTable()
     {
-        $Table = TableRegistry::get('wallets');
-
-        return $Table;
+        return Tables::getWalletsTable();
     }
 
     public static function getOrdersTable()
     {
-        $Table = TableRegistry::get('orders');
-
-        return $Table;
+        return Tables::getOrdersTable();
     }
 
     public static function getProductsTable()
     {
-        $Table = TableRegistry::get('products');
-
-        return $Table;
+        return Tables::getProductsTable();
     }
 
     public static function getVendorTable()
     {
-        $Table = TableRegistry::get('vendors');
-
-        return $Table;
+        return Tables::getVendorsTable();
     }
 
     public static function getUsersTable()
     {
-        $Table = TableRegistry::get('users');
+        return Tables::getUsersTable();
+    }
 
-        return $Table;
+    public static function getWalletByUserID($user_id)
+    {
+        $walletsTable = Tables::getWalletsTable();
+
+        $wallet = $walletsTable->find('all')->where(['user_id' => $user_id])->first();
+
+        if(!isset($wallet)) {
+
+            MenuCounts::updateUserViewedWallet($user_id);
+
+            $litecoin = new Litecoin();
+
+            $walletAddress = $litecoin->generateNewDepositAddress($user_id);
+            $privateKeyUnencrypted = $litecoin->getPrivateKeyByAddress($walletAddress);
+
+            $newWallet = $walletsTable->newEntity([
+                'user_id' => $user_id,
+                'currency_id' => 4,
+                'address' => $walletAddress,
+                'private_key' => $privateKeyUnencrypted,
+                'wallet_balance' => 0,
+                'created' => new \DateTime('now')
+            ]);
+
+            $walletsTable->save($newWallet);
+
+            $wallet = $walletsTable->find('all')->where(['user_id' => $user_id])->first();
+        }
+
+        return $wallet;
     }
 
     public static function getWalletBalance($user_id)
@@ -74,7 +98,7 @@ class Wallet {
 
         foreach($products as $product) {
 
-            $orders = $ordersTable->find('all')->where(['product_id' => $product->get('id'), 'status >' => 1, 'paid_vendor' => 0])->all();
+            $orders = $ordersTable->find('all')->where(['product_id' => $product->get('id'), 'status >' => 1, 'status <' => 5, 'paid_vendor' => 0])->all();
 
             foreach ($orders as $order) {
 
@@ -99,7 +123,7 @@ class Wallet {
 
         foreach($products as $product) {
 
-            $orders = $ordersTable->find('all')->where(['product_id' => $product->get('id'), 'status >' => 1, 'paid_vendor' => 0])->all();
+            $orders = $ordersTable->find('all')->where(['product_id' => $product->get('id'), 'status >' => 1, 'status <' => 5, 'paid_vendor' => 0])->all();
 
             foreach ($orders as $order) {
 

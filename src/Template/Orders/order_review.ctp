@@ -31,8 +31,11 @@
                         <div class="col-lg-8">
                             <div class="row">
                                 <div class="col-lg-6">
-                                    <img src="<?= str_replace(WWW_ROOT, '/', $product->product_images[$image_index]->image_display) ?>"/>
-
+                                    <?php if(count($product->product_images) > $image_index && file_exists(WWW_ROOT . $product->product_images[$image_index]->image_display)) { ?>
+                                    <img src="<?= $product->product_images[$image_index]->image_display ?>" width="600px" ?>
+                                    <?php } else { ?>
+                                    <img src="/img/avatar.png" width="600px" />
+                                    <?php } ?>
                                 </div>
                             </div>
                             <br/>
@@ -42,8 +45,9 @@
                                 <?php foreach($product->product_images as $pImage) { ?>
 
                                 <div class="col-md-3">
-                                    <a href="/products/view/<?= $id ?>?image_index=<?= $x ?>&"><img
-                                            src="<?= str_replace(WWW_ROOT, '/', $pImage->image_thumbnail) ?>"/></a>
+                                    <?php if(file_exists(WWW_ROOT . $pImage->image_thumbnail)) { ?>
+                                    <a href="/products/view/<?= $id ?>?image_index=<?= $x ?>&"><img src="<?= str_replace(WWW_ROOT, '/', $pImage->image_thumbnail) ?>"/></a>
+                                    <?php } ?>
                                 </div>
 
                                 <?php $x = $x + 1; ?>

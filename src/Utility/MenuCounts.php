@@ -225,6 +225,16 @@ class MenuCounts
         $vendorsTable->save($vendor);
     }
 
+    public static function updateVendorViewedIncomingSubtract($vendor_id)
+    {
+        $vendorsTable = Tables::getVendorsTable();
+        $vendor = $vendorsTable->find('all')->where(['id' => $vendor_id])->first();
+
+        $vendor->set('viewed_incoming', $vendor->get('viewed_incoming') - 1);
+
+        $vendorsTable->save($vendor);
+    }
+
     public static function updateVendorViewedFinalized($vendor_id, $reset = false)
     {
         $vendorsTable = Tables::getVendorsTable();

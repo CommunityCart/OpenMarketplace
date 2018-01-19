@@ -205,62 +205,24 @@ class AppController extends Controller
             if(isset($accountTransaction['address'])) {
                 $wallet = $this->Wallets->find('all')->where(['address' => $accountTransaction['address']])->first();
             }
-            else {
-                $wallet = $this->Wallets->find('all')->where(['user_id' => $this->Auth->user('id')])->first();
-            }
 
-            // TODO: Do not query database for 'move' category
-            // TODO: Insert 'move' transactions via the LiteCoin Utility move method
-            if($accountTransaction['category'] == 'move'){
-
-                $amount = $accountTransaction['amount'];
-
-                if($amount > 0) {
-                    $accountTransaction['txid'] = '(receive) internal funds transfer';
-                }
-                else {
-                    $accountTransaction['txid'] = '(send) internal funds transfer';
-                }
-
-                $walletTransaction = $this->WalletTransactions->find('all')->where(['transaction_hash' => $accountTransaction['txid'], 'transaction_time' => $accountTransaction['time']])->first();
-            }
-            else {
+            if($accountTransaction['category'] != 'move'){
 
                 $walletTransaction = $this->WalletTransactions->find('all')->where(['transaction_hash' => $accountTransaction['txid']])->first();
             }
 
             if(!isset($walletTransaction))
             {
-                $amount = 0;
+                if($accountTransaction['category'] != 'move' && $accountTransaction['category'] != 'send') {
 
-                if($accountTransaction['category'] == 'receive')
-                {
                     $amount = $accountTransaction['amount'];
-                }
-                else if($accountTransaction['category'] == 'send')
-                {
-                    $amount = -$accountTransaction['amount'];
-                }
-                else
-                {
-                    $amount = $accountTransaction['amount'];
+
+                    $amount = number_format($amount, 8);
 
                     if($amount > 0) {
-                        $accountTransaction['txid'] = '(receive) internal funds transfer';
+
+                        MenuCounts::updateUserViewedWallet($user->get('id'));
                     }
-                    else {
-                        $accountTransaction['txid'] = '(send) internal funds transfer';
-                    }
-                }
-
-                $amount = number_format($amount, 8);
-
-                if($amount > 0) {
-
-                    MenuCounts::updateUserViewedWallet($user->get('id'));
-                }
-
-                if($accountTransaction['category'] == 'move') {
 
                     $walletTransactionEntity = $this->WalletTransactions->newEntity([
                         'wallet_id' => $wallet->get('id'),
@@ -270,27 +232,19 @@ class AppController extends Controller
                         'created' => new \DateTime('now'),
                         'transaction_time' => $accountTransaction['time']
                     ]);
-                }
-                else
-                {
-                    $walletTransactionEntity = $this->WalletTransactions->newEntity([
-                        'wallet_id' => $wallet->get('id'),
-                        'transaction_hash' => $accountTransaction['txid'],
-                        'transaction_details' => json_encode($accountTransaction),
-                        'balance' => $amount,
-                        'created' => new \DateTime('now'),
-                        'transaction_time' => $accountTransaction['time']
-                    ]);
-                }
 
-                $this->WalletTransactions->save($walletTransactionEntity);
+                    $this->WalletTransactions->save($walletTransactionEntity);
+                }
             }
             else {
 
-                if(isset($accountTransaction['confirmations']) && $walletTransaction->get('confirmations') < 7) {
+                if($accountTransaction['category'] != 'move' && $accountTransaction['category'] != 'send') {
 
-                    $walletTransaction->set('confirmations', $accountTransaction['confirmations']);
-                    $this->WalletTransactions->save($walletTransaction);
+                    if (isset($accountTransaction['confirmations']) && $walletTransaction->get('confirmations') < 7) {
+
+                        $walletTransaction->set('confirmations', $accountTransaction['confirmations']);
+                        $this->WalletTransactions->save($walletTransaction);
+                    }
                 }
             }
         }
